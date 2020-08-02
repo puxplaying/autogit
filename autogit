@@ -107,5 +107,9 @@ do
 done < $HOME/autogit/reponames/github
 }
 #
+time {
 clear
 githubversion
+echo ""
+echo -e "\e[1m Time: \e[0m"
+}
