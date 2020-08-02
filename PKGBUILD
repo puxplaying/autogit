@@ -19,7 +19,12 @@ package () {
 	#install -Dm644 "update.desktop" "$pkgdir/usr/share/applications/update.desktop"
 	#install -Dm644 "update.png" "$pkgdir/usr/share/pixmaps/update.png"
 	install -Dm755 "$srcdir/$pkgname-$pkgver/autogit" "$pkgdir/usr/bin/autogit"
-	mkdir -p $_pkgdir
-	cp -r $srcdir/$pkgname-$pkgver/reponames $_pkgdir/reponames/ 
-	cp -r $srcdir/$pkgname-$pkgver/autogit.config $_pkgdir/
+	if [ -e "$DIR/packages/$p" ]
+		then
+			echo "local config found"
+		else
+			mkdir -p $_pkgdir
+		cp -r $srcdir/$pkgname-$pkgver/reponames $_pkgdir/reponames/ 
+		cp -r $srcdir/$pkgname-$pkgver/autogit.config $_pkgdir/
+	fi
 }
