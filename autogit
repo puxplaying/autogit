@@ -84,11 +84,13 @@ do
     else
     if [ "$var" == "0" ]
     then
+    updpkgsums
     time makepkg -src
     mv *.*.tar.xz "$DIR/binary"
     else
     if [ "$var" == "2" ]
     then
+    updpkgsums
     time makepkg -srci
     mv *.*.tar.xz "$DIR/binary"
     else
