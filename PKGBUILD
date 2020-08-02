@@ -19,7 +19,7 @@ package () {
 	#install -Dm644 "update.desktop" "$pkgdir/usr/share/applications/update.desktop"
 	#install -Dm644 "update.png" "$pkgdir/usr/share/pixmaps/update.png"
 	install -Dm755 "$srcdir/$pkgname-$pkgver/autogit" "$pkgdir/usr/bin/autogit"
-	if [ -e "$DIR/packages/$p" ]
+	if [ -e "$_pkgdir" ]
 		then
 			echo "local config found"
 		else
