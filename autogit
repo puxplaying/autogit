@@ -111,12 +111,64 @@ do
 done < $HOME/autogit/reponames/github
 }
 #
+function manualsync {
 time {
 clear
 githubversion
 # Local pacman repository update - rename repo to your preference
-# repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.*
+#repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
 # end
 echo ""
-echo -e "\e[1m Time: \e[0m"
+echo -e "\e[1m Time Passed: \e[0m"
 }
+}
+#
+function main {
+while true
+do
+
+    clear # Use this instead of the clear command
+
+    time {
+    githubversion
+    # Local pacman repository update - rename repo to your preference
+    #repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
+    # end
+    echo ""
+    echo -e "\e[1m Time Passed: \e[0m"
+    }
+    echo ""
+    echo -e "\e[1mPress \e[7mCtrl+C\e[0m \e[1mto stop autosync\e[0m"
+    countdown() {
+    secs=$timer
+    shift
+    while [ $secs -gt 0 ]
+    do
+    printf "\r\033[KWaiting %.d seconds for next sync ..." $((secs--))
+    sleep 1
+    done
+    echo
+    }
+    countdown
+    sleep 1 && main
+
+    # wait for input, e.g. by pressing ENTER:
+    read -r
+
+
+done # close while-loop
+}
+#
+# Start script
+function modecheck {
+if [ "$mode" == "1" ] 
+    then
+    main
+    else
+    if [ "$mode" == "2" ]
+    then
+    manualsync
+    fi
+fi
+}
+modecheck
