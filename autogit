@@ -40,16 +40,19 @@ do
     folder="$(ls)"
     buildpkg -c -p $folder
     mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
     else
     if [ "$var" == "0" ]
     then
     time makepkg -src
     mv *.*.tar.xz "$DIR/binary"
+    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
     else
     if [ "$var" == "2" ]
     then
     time makepkg -srci
     mv *.*.tar.xz "$DIR/binary"
+    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
     else
     if [ "$var" == "3" ]
     then
@@ -58,6 +61,7 @@ do
     folder="$(ls)"
     buildpkg -b unstable -c -p $folder
     mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
     fi
     fi
     fi
@@ -110,6 +114,9 @@ done < $HOME/autogit/reponames/github
 time {
 clear
 githubversion
+# Local pacman repository update - rename repo to your preference
+# repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.*
+# end
 echo ""
 echo -e "\e[1m Time: \e[0m"
 }
