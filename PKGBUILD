@@ -1,7 +1,7 @@
 # Maintainer: puxplaying
 
 pkgname=autogit
-pkgver=0.5
+pkgver=0.6
 pkgrel=1
 _pkgdir=$HOME/autogit
 pkgdesc="Auto build/maintain or install/update git PKGBUILDS"
