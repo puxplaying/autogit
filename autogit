@@ -5,8 +5,8 @@
 #
 GITHUBSOURCE=$HOME/autogit/reponames/github
 #GITHUBSOURCE1=$HOME/autogit/reponames/github1
-GITHUBSOURCECUSTOM=$HOME/autogit/reponames/github
-GITLABSOURCE=$HOME/autogit/reponames/gitlabmanjaro
+GITHUBSOURCECUSTOM=$HOME/autogit/reponames/githubcustom
+GITLABSOURCE=$HOME/autogit/reponames/gitlab
 #
 DIR=$HOME/autogit
 # Load Config
