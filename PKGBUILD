@@ -25,6 +25,6 @@ package () {
 		else
 			mkdir -p $_pkgdir
 		cp -r $srcdir/$pkgname-$pkgver/reponames $_pkgdir/reponames/ 
-		cp -r $srcdir/$pkgname-$pkgver/autogit.config $_pkgdir/
+		cp -r $srcdir/$pkgname-$pkgver/autogit.conf $_pkgdir/
 	fi
 }
