@@ -15,420 +15,383 @@ configdir=$DIR
 #. autogit.config
 #
 # Update, install, build packages from Github repos with available PKGBUILD
-function githubversion {
-while IFS="" read -r p || [ -n "$p" ]
-do
-  echo ""
-  cd "$DIR"
-  printf '%s\n' "$p"  # Print package list entry
-  GITHUBCLONEURL=$GITHUBCLONEURLC
-  GITHUBURL="$GITHUBURLC"$p"/"$BRANCH"/PKGBUILD"
-  GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-  #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-  if [ -e "$DIR/packages/$p" ] # If file exists
-  then
-    echo "file does exist local"
-    cd "$DIR/packages/$p"   # go to current package directory to compare it
-    ls
-    #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-    localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-    if [ "$GETPKGVER" == "$localfile" ]
-    then
-    echo -e "\e[7mUp to date!\e[0m"
-    else
-    echo -e "\e[7mOut of date! Updating ...\e[0m"
-    git fetch origin
-    git checkout master
-    git reset --hard origin/master # reset files to how they were before
-    git clean -f -d # clear any other changes you've done
-    if [ "$var" == "1" ] 
-    then
-    ls
-    cd ..
-    folder="$(ls)"
-    buildpkg -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    else
-    if [ "$var" == "0" ]
-    then
-    time makepkg -src
-    mv *.*.tar.xz "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    else
-    if [ "$var" == "2" ]
-    then
-    time makepkg -srci
-    mv *.*.tar.xz "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    else
-    if [ "$var" == "3" ]
-    then
-    ls
-    cd ..
-    folder="$(ls)"
-    buildpkg -b unstable -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    fi
-    fi
-    fi
-    fi
-    fi
-  else
-    echo "file does not exist local, downloading ..."
-    mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-    git clone "$GITHUBCLONEURL""$p".git
-    folder="$(ls)"
-    echo "$folder"
-    mv $folder original
-    cd original
-    ls
-    mv * .* "$DIR/packages/$p"
-    cd "$DIR/packages/$p"
-    rm -rf original
-    mkdir -p "$DIR/binary"
-    if [ "$var" == "1" ] 
-    then
-    updpkgsums
-    cd .. && buildpkg -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
-    else
-    if [ "$var" == "0" ]
-    then
-    updpkgsums
-    time makepkg -src
-    mv *.*.tar.xz "$DIR/binary"
-    else
-    if [ "$var" == "2" ]
-    then
-    updpkgsums
-    time makepkg -srci
-    mv *.*.tar.xz "$DIR/binary"
-    else
-    if [ "$var" == "3" ]
-    then
-    updpkgsums
-    cd .. && buildpkg -b unstable -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
-    fi
-    fi
-    fi
-    fi
-    fi
-done < $GITHUBSOURCE #< $GITHUBSOURCE1
+function githubversion() {
+    while IFS="" read -r p || [ -n "$p" ]; do
+        echo ""
+        cd "$DIR"
+        printf '%s\n' "$p" # Print package list entry
+        GITHUBCLONEURL=$GITHUBCLONEURLC
+        GITHUBURL="$GITHUBURLC"$p"/"$BRANCH"/PKGBUILD"
+        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
+        if [ -e "$DIR/packages/$p" ]; then # If file exists
+            echo "file does exist local"
+            cd "$DIR/packages/$p" # go to current package directory to compare it
+            ls
+            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
+            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ]; then
+                echo -e "\e[7mUp to date!\e[0m"
+            else
+                echo -e "\e[7mOut of date! Updating ...\e[0m"
+                git fetch origin
+                git checkout master
+                git reset --hard origin/master # reset files to how they were before
+                git clean -f -d                # clear any other changes you've done
+                if [ "$var" == "1" ]; then
+                    ls
+                    cd ..
+                    folder="$(ls)"
+                    buildpkg -c -p $folder
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+                    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                else
+                    if [ "$var" == "0" ]; then
+                        time makepkg -src
+                        mv *.*.tar.xz "$DIR/binary"
+                        find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    else
+                        if [ "$var" == "2" ]; then
+                            time makepkg -srci
+                            mv *.*.tar.xz "$DIR/binary"
+                            find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        else
+                            if [ "$var" == "3" ]; then
+                                ls
+                                cd ..
+                                folder="$(ls)"
+                                buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                                #buildpkg -b unstable -c -p $folder
+                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+                                find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        else
+            echo "file does not exist local, downloading ..."
+            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
+            git clone "$GITHUBCLONEURL""$p".git
+            folder="$(ls)"
+            echo "$folder"
+            mv $folder original
+            cd original
+            ls
+            mv * .* "$DIR/packages/$p"
+            cd "$DIR/packages/$p"
+            rm -rf original
+            mkdir -p "$DIR/binary"
+            if [ "$var" == "1" ]; then
+                updpkgsums
+                cd .. && buildpkg -c -p $folder
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+            else
+                if [ "$var" == "0" ]; then
+                    updpkgsums
+                    time makepkg -src
+                    mv *.*.tar.xz "$DIR/binary"
+                else
+                    if [ "$var" == "2" ]; then
+                        updpkgsums
+                        time makepkg -srci
+                        mv *.*.tar.xz "$DIR/binary"
+                    else
+                        if [ "$var" == "3" ]; then
+                            updpkgsums
+                            cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                            #cd .. && buildpkg -b unstable -c -p $folder
+                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done <$GITHUBSOURCE #< $GITHUBSOURCE1
 }
 #
 # Additional Custom Github repo
 # Update, install, build packages from Github repos with available PKGBUILD
-function githubversioncustom {
-while IFS="" read -r p || [ -n "$p" ]
-do
-  echo ""
-  cd "$DIR"
-  printf '%s\n' "$p"  # Print package list entry
-  BRANCH=$BRANCHCUSTOM
-  GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM
-  GITHUBURL="$GITHUBURLCCUSTOM"$p"/"$BRANCH"/PKGBUILD"
-  GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-  #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-  if [ -e "$DIR/packages/$p" ] # If file exists
-  then
-    echo "file does exist local"
-    cd "$DIR/packages/$p"   # go to current package directory to compare it
-    ls
-    #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-    localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-    if [ "$GETPKGVER" == "$localfile" ]
-    then
-    echo -e "\e[7mUp to date!\e[0m"
-    else
-    echo -e "\e[7mOut of date! Updating ...\e[0m"
-    git fetch origin
-    git checkout master
-    git reset --hard origin/master # reset files to how they were before
-    git clean -f -d # clear any other changes you've done
-    if [ "$var" == "1" ] 
-    then
-    ls
-    cd ..
-    folder="$(ls)"
-    buildpkg -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    else
-    if [ "$var" == "0" ]
-    then
-    time makepkg -src
-    mv *.*.tar.xz "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    else
-    if [ "$var" == "2" ]
-    then
-    time makepkg -srci
-    mv *.*.tar.xz "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    else
-    if [ "$var" == "3" ]
-    then
-    ls
-    cd ..
-    folder="$(ls)"
-    buildpkg -b unstable -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    fi
-    fi
-    fi
-    fi
-    fi
-  else
-    echo "file does not exist local, downloading ..."
-    mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-    git clone "$GITHUBCLONEURL""$p".git
-    folder="$(ls)"
-    echo "$folder"
-    mv $folder original
-    cd original
-    ls
-    mv * .* "$DIR/packages/$p"
-    cd "$DIR/packages/$p"
-    rm -rf original
-    mkdir -p "$DIR/binary"
-    if [ "$var" == "1" ] 
-    then
-    updpkgsums
-    cd .. && buildpkg -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
-    else
-    if [ "$var" == "0" ]
-    then
-    updpkgsums
-    time makepkg -src
-    mv *.*.tar.xz "$DIR/binary"
-    else
-    if [ "$var" == "2" ]
-    then
-    updpkgsums
-    time makepkg -srci
-    mv *.*.tar.xz "$DIR/binary"
-    else
-    if [ "$var" == "3" ]
-    then
-    updpkgsums
-    cd .. && buildpkg -b unstable -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
-    fi
-    fi
-    fi
-    fi
-    fi
-done < $GITHUBSOURCECUSTOM #< $GITHUBSOURCE1
+function githubversioncustom() {
+    while IFS="" read -r p || [ -n "$p" ]; do
+        echo ""
+        cd "$DIR"
+        printf '%s\n' "$p" # Print package list entry
+        BRANCH=$BRANCHCUSTOM
+        GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM
+        GITHUBURL="$GITHUBURLCCUSTOM"$p"/"$BRANCH"/PKGBUILD"
+        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
+        if [ -e "$DIR/packages/$p" ]; then # If file exists
+            echo "file does exist local"
+            cd "$DIR/packages/$p" # go to current package directory to compare it
+            ls
+            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
+            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ]; then
+                echo -e "\e[7mUp to date!\e[0m"
+            else
+                echo -e "\e[7mOut of date! Updating ...\e[0m"
+                git fetch origin
+                git checkout master
+                git reset --hard origin/master # reset files to how they were before
+                git clean -f -d                # clear any other changes you've done
+                if [ "$var" == "1" ]; then
+                    ls
+                    cd ..
+                    folder="$(ls)"
+                    buildpkg -c -p $folder
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+                    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                else
+                    if [ "$var" == "0" ]; then
+                        time makepkg -src
+                        mv *.*.tar.xz "$DIR/binary"
+                        find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    else
+                        if [ "$var" == "2" ]; then
+                            time makepkg -srci
+                            mv *.*.tar.xz "$DIR/binary"
+                            find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        else
+                            if [ "$var" == "3" ]; then
+                                ls
+                                cd ..
+                                folder="$(ls)"
+                                buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                                #buildpkg -b unstable -c -p $folder
+                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+                                find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        else
+            echo "file does not exist local, downloading ..."
+            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
+            git clone "$GITHUBCLONEURL""$p".git
+            folder="$(ls)"
+            echo "$folder"
+            mv $folder original
+            cd original
+            ls
+            mv * .* "$DIR/packages/$p"
+            cd "$DIR/packages/$p"
+            rm -rf original
+            mkdir -p "$DIR/binary"
+            if [ "$var" == "1" ]; then
+                updpkgsums
+                cd .. && buildpkg -c -p $folder
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+            else
+                if [ "$var" == "0" ]; then
+                    updpkgsums
+                    time makepkg -src
+                    mv *.*.tar.xz "$DIR/binary"
+                else
+                    if [ "$var" == "2" ]; then
+                        updpkgsums
+                        time makepkg -srci
+                        mv *.*.tar.xz "$DIR/binary"
+                    else
+                        if [ "$var" == "3" ]; then
+                            updpkgsums
+                            cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                            #cd .. && buildpkg -b unstable -c -p $folder
+                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done <$GITHUBSOURCECUSTOM #< $GITHUBSOURCE1
 }
 #
 #
 # Additional Gitlab repo
 # Update, install, build packages from Gitlab repos with available PKGBUILD
-function gitlabversion {
-while IFS="" read -r p || [ -n "$p" ]
-do
-  echo ""
-  cd "$DIR"
-  printf '%s\n' "$p"  # Print package list entry
-  BRANCH=$BRANCHGITLAB
-  GITHUBCLONEURL=$GITLABCLONEURL
-  GITHUBURL="$GITLABURLC"$p"/-/raw/"$BRANCH"/PKGBUILD"
-  GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-  #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-  if [ -e "$DIR/packages/$p" ] # If file exists
-  then
-    echo "file does exist local"
-    cd "$DIR/packages/$p"   # go to current package directory to compare it
-    ls
-    #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-    localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-    if [ "$GETPKGVER" == "$localfile" ]
-    then
-    echo -e "\e[7mUp to date!\e[0m"
-    else
-    echo -e "\e[7mOut of date! Updating ...\e[0m"
-    git fetch origin
-    git checkout master
-    git reset --hard origin/master # reset files to how they were before
-    git clean -f -d # clear any other changes you've done
-    if [ "$var" == "1" ] 
-    then
-    ls
-    cd ..
-    folder="$(ls)"
-    buildpkg -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    else
-    if [ "$var" == "0" ]
-    then
-    time makepkg -src
-    mv *.*.tar.xz "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    else
-    if [ "$var" == "2" ]
-    then
-    time makepkg -srci
-    mv *.*.tar.xz "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    else
-    if [ "$var" == "3" ]
-    then
-    ls
-    cd ..
-    folder="$(ls)"
-    buildpkg -b unstable -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
-    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-    fi
-    fi
-    fi
-    fi
-    fi
-  else
-    echo "file does not exist local, downloading ..."
-    mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-    git clone "$GITHUBCLONEURL""$p".git
-    folder="$(ls)"
-    echo "$folder"
-    mv $folder original
-    cd original
-    ls
-    mv * .* "$DIR/packages/$p"
-    cd "$DIR/packages/$p"
-    rm -rf original
-    mkdir -p "$DIR/binary"
-    if [ "$var" == "1" ] 
-    then
-    updpkgsums
-    cd .. && buildpkg -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
-    else
-    if [ "$var" == "0" ]
-    then
-    updpkgsums
-    time makepkg -src
-    mv *.*.tar.xz "$DIR/binary"
-    else
-    if [ "$var" == "2" ]
-    then
-    updpkgsums
-    time makepkg -srci
-    mv *.*.tar.xz "$DIR/binary"
-    else
-    if [ "$var" == "3" ]
-    then
-    updpkgsums
-    cd .. && buildpkg -b unstable -c -p $folder
-    mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
-    fi
-    fi
-    fi
-    fi
-    fi
-done < $GITLABSOURCE #< $GITHUBSOURCE1
+function gitlabversion() {
+    while IFS="" read -r p || [ -n "$p" ]; do
+        echo ""
+        cd "$DIR"
+        printf '%s\n' "$p" # Print package list entry
+        BRANCH=$BRANCHGITLAB
+        GITHUBCLONEURL=$GITLABCLONEURL
+        GITHUBURL="$GITLABURLC"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
+        if [ -e "$DIR/packages/$p" ]; then # If file exists
+            echo "file does exist local"
+            cd "$DIR/packages/$p" # go to current package directory to compare it
+            ls
+            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
+            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ]; then
+                echo -e "\e[7mUp to date!\e[0m"
+            else
+                echo -e "\e[7mOut of date! Updating ...\e[0m"
+                git fetch origin
+                git checkout master
+                git reset --hard origin/master # reset files to how they were before
+                git clean -f -d                # clear any other changes you've done
+                if [ "$var" == "1" ]; then
+                    ls
+                    cd ..
+                    folder="$(ls)"
+                    buildpkg -c -p $folder
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+                    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                else
+                    if [ "$var" == "0" ]; then
+                        time makepkg -src
+                        mv *.*.tar.xz "$DIR/binary"
+                        find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    else
+                        if [ "$var" == "2" ]; then
+                            time makepkg -srci
+                            mv *.*.tar.xz "$DIR/binary"
+                            find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        else
+                            if [ "$var" == "3" ]; then
+                                ls
+                                cd ..
+                                folder="$(ls)"
+                                buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                                #buildpkg -b unstable -c -p $folder
+                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+                                find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        else
+            echo "file does not exist local, downloading ..."
+            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
+            git clone "$GITHUBCLONEURL""$p".git
+            folder="$(ls)"
+            echo "$folder"
+            mv $folder original
+            cd original
+            ls
+            mv * .* "$DIR/packages/$p"
+            cd "$DIR/packages/$p"
+            rm -rf original
+            mkdir -p "$DIR/binary"
+            if [ "$var" == "1" ]; then
+                updpkgsums
+                cd .. && buildpkg -c -p $folder
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+            else
+                if [ "$var" == "0" ]; then
+                    updpkgsums
+                    time makepkg -src
+                    mv *.*.tar.xz "$DIR/binary"
+                else
+                    if [ "$var" == "2" ]; then
+                        updpkgsums
+                        time makepkg -srci
+                        mv *.*.tar.xz "$DIR/binary"
+                    else
+                        if [ "$var" == "3" ]; then
+                            updpkgsums
+                            cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                            #cd .. && buildpkg -b unstable -c -p $folder
+                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done <$GITLABSOURCE #< $GITHUBSOURCE1
 }
 #
 # Run the script once
-function manualsync {
-time {
-clear
-if [ "$SETGITHUBREPO" == "1" ]
-then
-githubversion
-echo ""
-echo -e "\e[1mGithub master branch updated\e[0m"
-fi
-if [ "$SETCUSTGITHUBREPO" == "1" ]
-then
-githubversioncustom
-echo ""
-echo -e "\e[1mcustom repo updated\e[0m"
-fi
-if [ "$SETGITLABREPO" == "1" ]
-then
-gitlabversion
-echo ""
-echo -e "\e[1mGitlab master branch updated\e[0m"
-fi
-# Local pacman repository update - rename repo to your preference
-repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
-# end
-echo ""
-echo -e "\e[1m Time Passed: \e[0m"
-}
+function manualsync() {
+    time {
+        clear
+        if [ "$SETGITHUBREPO" == "1" ]; then
+            githubversion
+            echo ""
+            echo -e "\e[1mGithub master branch updated\e[0m"
+        fi
+        if [ "$SETCUSTGITHUBREPO" == "1" ]; then
+            githubversioncustom
+            echo ""
+            echo -e "\e[1mcustom repo updated\e[0m"
+        fi
+        if [ "$SETGITLABREPO" == "1" ]; then
+            gitlabversion
+            echo ""
+            echo -e "\e[1mGitlab master branch updated\e[0m"
+        fi
+        # Local pacman repository update - rename repo to your preference
+        repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
+        # end
+        echo ""
+        echo -e "\e[1m Time Passed: \e[0m"
+    }
 }
 #
 # Run the script in a loop
-function main {
-while true
-do
-
-    clear # Use this instead of the clear command
-
-    time {
-    #githubversion
-    if [ "$SETGITHUBREPO" == "1" ]
-    then
-    githubversion
-    echo ""
-    echo -e "\e[1mGithub master branch updated\e[0m"
-    fi
-    if [ "$SETCUSTGITHUBREPO" == "1" ]
-    then
-    githubversioncustom
-    echo ""
-    echo -e "\e[1mcustom repo updated\e[0m"
-    fi
-    if [ "$SETGITLABREPO" == "1" ]
-    then
-    gitlabversion
-    echo ""
-    echo -e "\e[1mGitlab master branch updated\e[0m"
-    fi
-    # Add repo and do a local pacman repository update after each update - rename repo to your preference
-    repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
-    # end
-    echo ""
-    echo -e "\e[1m Time Passed: \e[0m"
-    }
-    echo ""
-    echo -e "\e[1mPress \e[7mCtrl+C\e[0m \e[1mto stop autosync\e[0m"
-    countdown() {
-    secs=$timer
-    shift
-    while [ $secs -gt 0 ]
-    do
-    printf "\r\033[KWaiting %.d seconds for next sync ..." $((secs--))
-    sleep 1
+function main() {
+    while true; do
+        
+        clear # Use this instead of the clear command
+        
+        time {
+            #githubversion
+            if [ "$SETGITHUBREPO" == "1" ]; then
+                githubversion
+                echo ""
+                echo -e "\e[1mGithub master branch updated\e[0m"
+            fi
+            if [ "$SETCUSTGITHUBREPO" == "1" ]; then
+                githubversioncustom
+                echo ""
+                echo -e "\e[1mcustom repo updated\e[0m"
+            fi
+            if [ "$SETGITLABREPO" == "1" ]; then
+                gitlabversion
+                echo ""
+                echo -e "\e[1mGitlab master branch updated\e[0m"
+            fi
+            # Add repo and do a local pacman repository update after each update - rename repo to your preference
+            repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
+            # end
+            echo ""
+            echo -e "\e[1m Time Passed: \e[0m"
+        }
+        echo ""
+        echo -e "\e[1mPress \e[7mCtrl+C\e[0m \e[1mto stop autosync\e[0m"
+        countdown() {
+            secs=$timer
+            shift
+            while [ $secs -gt 0 ]; do
+                printf "\r\033[KWaiting %.d seconds for next sync ..." $((secs--))
+                sleep 1
+            done
+            echo
+        }
+        countdown
+        sleep 1 && main
+        
+        # wait for input, e.g. by pressing ENTER:
+        read -r
+        
     done
-    echo
-    }
-    countdown
-    sleep 1 && main
-
-    # wait for input, e.g. by pressing ENTER:
-    read -r
-
-
-done # close while-loop
+    # close while-loop
 }
 #
 # Start script
-function modecheck {
-if [ "$mode" == "1" ] 
-    then
-    main
+function modecheck() {
+    if [ "$mode" == "1" ]; then
+        main
     else
-    if [ "$mode" == "2" ]
-    then
-    manualsync
+        if [ "$mode" == "2" ]; then
+            manualsync
+        fi
     fi
-fi
 }
 modecheck
