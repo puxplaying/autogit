@@ -11,7 +11,7 @@ GITLABSOURCE=$HOME/autogit/reponames/gitlab
 DIR=$HOME/autogit
 # Load Config
 configdir=$DIR
-. $configdir/autogit.config
+. $configdir/autogit.conf
 #. autogit.config
 #
 # Update, install, build packages from Github repos with available PKGBUILD
