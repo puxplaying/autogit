@@ -1,7 +1,7 @@
 # Maintainer: puxplaying
 
 pkgname=autogit
-pkgver=0.10
+pkgver=0.11
 pkgrel=1
 _pkgdir=$HOME/autogit
 pkgdesc="Auto build/maintain or install/update git PKGBUILDS"
@@ -24,7 +24,7 @@ package () {
 			echo "local config found"
 		else
 			mkdir -p $_pkgdir
-		cp -r $srcdir/$pkgname-$pkgver/reponames $_pkgdir/reponames/ 
-		cp -r $srcdir/$pkgname-$pkgver/autogit.conf $_pkgdir/
+			cp -r $srcdir/$pkgname-$pkgver/reponames $_pkgdir/reponames/ 
+			cp -r $srcdir/$pkgname-$pkgver/autogit.conf $_pkgdir/
 	fi
 }
