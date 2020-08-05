@@ -639,7 +639,7 @@ function modecheck() {
 			echo "local config found"
 		else
 			mkdir -p $DIR
-            cp -r /usr/share/autogit $DIR
+            cp -r /usr/share/autogit $HOME
 	fi
     if [ "$mode" == "1" ]; then
         main
