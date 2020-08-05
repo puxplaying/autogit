@@ -3,6 +3,15 @@
 # Description:
 # Set the preferred package building config in the autogit.config file e.g. var=3
 #
+# Check if local config exists
+if [ -e "$DIR" ]
+		then
+			echo "local config found"
+		else
+			mkdir -p $DIR
+            cp -r /usr/share/autogit $HOME
+fi
+#
 DIR=$HOME/autogit
 # Load Config
 configdir=$DIR
@@ -634,13 +643,6 @@ function main() {
 #
 # Start script
 function modecheck() {
-    if [ -e "$DIR" ]
-		then
-			echo "local config found"
-		else
-			mkdir -p $DIR
-            cp -r /usr/share/autogit $HOME
-	fi
     if [ "$mode" == "1" ]; then
         main
     else
