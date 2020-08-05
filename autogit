@@ -3,16 +3,18 @@
 # Description:
 # Set the preferred package building config in the autogit.config file e.g. var=3
 #
-GITHUBSOURCE=$HOME/autogit/reponames/github
-#GITHUBSOURCE1=$HOME/autogit/reponames/github1
-GITHUBSOURCECUSTOM=$HOME/autogit/reponames/githubcustom
-GITLABSOURCE=$HOME/autogit/reponames/gitlab
-#
 DIR=$HOME/autogit
 # Load Config
 configdir=$DIR
 . $configdir/autogit.conf
 #. autogit.config
+#
+GITHUBMSG="\e[1mGithub repo updated - \e[7m$GITHUBBINARY\e[0m\e[0m"
+GITHUBMSGCUST="\e[1mGithub repo updated - \e[7m$GITHUBBINARYCUSTOM\e[0m\e[0m"
+GITLABMSG="\e[1mGitlab repo updated - \e[7m$GITLABBINARY\e[0m\e[0m\e[0m"
+GITLABMSGCUST="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM\e[0m\e[0m\e[0m"
+GITLABMSGCUST2="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM2\e[0m\e[0m\e[0m"
+#
 #
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversion() {
@@ -43,18 +45,18 @@ function githubversion() {
                     cd ..
                     folder="$(ls)"
                     buildpkg -c -p $folder
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
-                    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
+                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                 else
                     if [ "$var" == "0" ]; then
-                        time makepkg -src
-                        mv *.*.tar.xz "$DIR/binary"
-                        find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                        mv *.*.tar.xz "$DIR/$GITHUBBINARY"
+                        find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
                         if [ "$var" == "2" ]; then
                             time makepkg -srci
-                            mv *.*.tar.xz "$DIR/binary"
-                            find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            mv *.*.tar.xz "$DIR/$GITHUBBINARY"
+                            find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         else
                             if [ "$var" == "3" ]; then
                                 ls
@@ -62,8 +64,8 @@ function githubversion() {
                                 folder="$(ls)"
                                 buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                                 #buildpkg -b unstable -c -p $folder
-                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
-                                find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
+                                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                             fi
                         fi
                     fi
@@ -81,27 +83,27 @@ function githubversion() {
             mv * .* "$DIR/packages/$p"
             cd "$DIR/packages/$p"
             rm -rf original
-            mkdir -p "$DIR/binary"
+            mkdir -p "$DIR/$GITHUBBINARY"
             if [ "$var" == "1" ]; then
                 updpkgsums
                 cd .. && buildpkg -c -p $folder
-                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
             else
                 if [ "$var" == "0" ]; then
                     updpkgsums
-                    time makepkg -src
-                    mv *.*.tar.xz "$DIR/binary"
+                    time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                    mv *.*.tar.xz "$DIR/$GITHUBBINARY"
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
                         time makepkg -srci
-                        mv *.*.tar.xz "$DIR/binary"
+                        mv *.*.tar.xz "$DIR/$GITHUBBINARY"
                     else
                         if [ "$var" == "3" ]; then
                             updpkgsums
                             cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                             #cd .. && buildpkg -b unstable -c -p $folder
-                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
                         fi
                     fi
                 fi
@@ -141,18 +143,18 @@ function githubversioncustom() {
                     cd ..
                     folder="$(ls)"
                     buildpkg -c -p $folder
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
-                    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
+                    find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                 else
                     if [ "$var" == "0" ]; then
-                        time makepkg -src
-                        mv *.*.tar.xz "$DIR/binary"
-                        find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                        mv *.*.tar.xz "$DIR/$GITHUBBINARYCUSTOM"
+                        find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
                         if [ "$var" == "2" ]; then
                             time makepkg -srci
-                            mv *.*.tar.xz "$DIR/binary"
-                            find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            mv *.*.tar.xz "$DIR/$GITHUBBINARYCUSTOM"
+                            find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         else
                             if [ "$var" == "3" ]; then
                                 ls
@@ -160,8 +162,8 @@ function githubversioncustom() {
                                 folder="$(ls)"
                                 buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                                 #buildpkg -b unstable -c -p $folder
-                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
-                                find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
+                                find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                             fi
                         fi
                     fi
@@ -179,27 +181,27 @@ function githubversioncustom() {
             mv * .* "$DIR/packages/$p"
             cd "$DIR/packages/$p"
             rm -rf original
-            mkdir -p "$DIR/binary"
+            mkdir -p "$DIR/$GITHUBBINARYCUSTOM"
             if [ "$var" == "1" ]; then
                 updpkgsums
                 cd .. && buildpkg -c -p $folder
-                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
             else
                 if [ "$var" == "0" ]; then
                     updpkgsums
-                    time makepkg -src
-                    mv *.*.tar.xz "$DIR/binary"
+                    time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                    mv *.*.tar.xz "$DIR/$GITHUBBINARYCUSTOM"
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
                         time makepkg -srci
-                        mv *.*.tar.xz "$DIR/binary"
+                        mv *.*.tar.xz "$DIR/$GITHUBBINARYCUSTOM"
                     else
                         if [ "$var" == "3" ]; then
                             updpkgsums
                             cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                             #cd .. && buildpkg -b unstable -c -p $folder
-                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
                         fi
                     fi
                 fi
@@ -240,18 +242,18 @@ function gitlabversion() {
                     cd ..
                     folder="$(ls)"
                     buildpkg -c -p $folder
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
-                    find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
+                    find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                 else
                     if [ "$var" == "0" ]; then
-                        time makepkg -src
-                        mv *.*.tar.xz "$DIR/binary"
-                        find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                        mv *.*.tar.xz "$DIR/$GITLABBINARY"
+                        find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
                         if [ "$var" == "2" ]; then
                             time makepkg -srci
-                            mv *.*.tar.xz "$DIR/binary"
-                            find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            mv *.*.tar.xz "$DIR/$GITLABBINARY"
+                            find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         else
                             if [ "$var" == "3" ]; then
                                 ls
@@ -259,8 +261,8 @@ function gitlabversion() {
                                 folder="$(ls)"
                                 buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                                 #buildpkg -b unstable -c -p $folder
-                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
-                                find "$DIR/binary" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
+                                find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                             fi
                         fi
                     fi
@@ -278,33 +280,229 @@ function gitlabversion() {
             mv * .* "$DIR/packages/$p"
             cd "$DIR/packages/$p"
             rm -rf original
-            mkdir -p "$DIR/binary"
+            mkdir -p "$DIR/$GITLABBINARY"
             if [ "$var" == "1" ]; then
                 updpkgsums
                 cd .. && buildpkg -c -p $folder
-                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/binary"
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
             else
                 if [ "$var" == "0" ]; then
                     updpkgsums
-                    time makepkg -src
-                    mv *.*.tar.xz "$DIR/binary"
+                    time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                    mv *.*.tar.xz "$DIR/$GITLABBINARY"
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
                         time makepkg -srci
-                        mv *.*.tar.xz "$DIR/binary"
+                        mv *.*.tar.xz "$DIR/$GITLABBINARY"
                     else
                         if [ "$var" == "3" ]; then
                             updpkgsums
                             cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                             #cd .. && buildpkg -b unstable -c -p $folder
-                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/binary"
+                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
                         fi
                     fi
                 fi
             fi
         fi
     done <$GITLABSOURCE #< $GITHUBSOURCE1
+}
+#
+# Additional Custom Gitlab repo
+# Update, install, build packages from Gitlab repos with available PKGBUILD
+function gitlabversioncustom() {
+    while IFS="" read -r p || [ -n "$p" ]; do
+        echo ""
+        cd "$DIR"
+        printf '%s\n' "$p" # Print package list entry
+        BRANCH=$BRANCHGITLABCUSTOM
+        GITHUBCLONEURL=$GITLABCLONEURLCUSTOM
+        GITHUBURL="$GITLABURLCCUSTOM"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
+        if [ -e "$DIR/packages/$p" ]; then # If file exists
+            echo "file does exist local"
+            cd "$DIR/packages/$p" # go to current package directory to compare it
+            ls
+            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
+            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ]; then
+                echo -e "\e[7mUp to date!\e[0m"
+            else
+                echo -e "\e[7mOut of date! Updating ...\e[0m"
+                git fetch origin
+                git checkout master
+                git reset --hard origin/master # reset files to how they were before
+                git clean -f -d                # clear any other changes you've done
+                if [ "$var" == "1" ]; then
+                    ls
+                    cd ..
+                    folder="$(ls)"
+                    buildpkg -c -p $folder
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
+                    find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                else
+                    if [ "$var" == "0" ]; then
+                        time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                        mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM"
+                        find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    else
+                        if [ "$var" == "2" ]; then
+                            time makepkg -srci
+                            mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM"
+                            find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        else
+                            if [ "$var" == "3" ]; then
+                                ls
+                                cd ..
+                                folder="$(ls)"
+                                buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                                #buildpkg -b unstable -c -p $folder
+                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
+                                find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        else
+            echo "file does not exist local, downloading ..."
+            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
+            git clone "$GITHUBCLONEURL""$p".git
+            folder="$(ls)"
+            echo "$folder"
+            mv $folder original
+            cd original
+            ls
+            mv * .* "$DIR/packages/$p"
+            cd "$DIR/packages/$p"
+            rm -rf original
+            mkdir -p "$DIR/$GITLABBINARYCUSTOM"
+            if [ "$var" == "1" ]; then
+                updpkgsums
+                cd .. && buildpkg -c -p $folder
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
+            else
+                if [ "$var" == "0" ]; then
+                    updpkgsums
+                    time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                    mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM"
+                else
+                    if [ "$var" == "2" ]; then
+                        updpkgsums
+                        time makepkg -srci
+                        mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM"
+                    else
+                        if [ "$var" == "3" ]; then
+                            updpkgsums
+                            cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                            #cd .. && buildpkg -b unstable -c -p $folder
+                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done <$GITLABSOURCECUSTOM #< $GITHUBSOURCE1
+}
+#
+# Additional Custom Gitlab repo extra 2
+# Update, install, build packages from Gitlab repos with available PKGBUILD
+function gitlabversioncustom2() {
+    while IFS="" read -r p || [ -n "$p" ]; do
+        echo ""
+        cd "$DIR"
+        printf '%s\n' "$p" # Print package list entry
+        BRANCH=$BRANCHGITLABCUSTOM2
+        GITHUBCLONEURL=$GITLABCLONEURLCUSTOM2
+        GITHUBURL="$GITLABURLCCUSTOM2"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
+        if [ -e "$DIR/packages/$p" ]; then # If file exists
+            echo "file does exist local"
+            cd "$DIR/packages/$p" # go to current package directory to compare it
+            ls
+            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
+            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ]; then
+                echo -e "\e[7mUp to date!\e[0m"
+            else
+                echo -e "\e[7mOut of date! Updating ...\e[0m"
+                git fetch origin
+                git checkout master
+                git reset --hard origin/master # reset files to how they were before
+                git clean -f -d                # clear any other changes you've done
+                if [ "$var" == "1" ]; then
+                    ls
+                    cd ..
+                    folder="$(ls)"
+                    buildpkg -c -p $folder
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
+                    find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                else
+                    if [ "$var" == "0" ]; then
+                        time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                        mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM2"
+                        find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    else
+                        if [ "$var" == "2" ]; then
+                            time makepkg -srci
+                            mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM2"
+                            find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        else
+                            if [ "$var" == "3" ]; then
+                                ls
+                                cd ..
+                                folder="$(ls)"
+                                buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                                #buildpkg -b unstable -c -p $folder
+                                mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
+                                find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        else
+            echo "file does not exist local, downloading ..."
+            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
+            git clone "$GITHUBCLONEURL""$p".git
+            folder="$(ls)"
+            echo "$folder"
+            mv $folder original
+            cd original
+            ls
+            mv * .* "$DIR/packages/$p"
+            cd "$DIR/packages/$p"
+            rm -rf original
+            mkdir -p "$DIR/$GITLABBINARYCUSTOM2"
+            if [ "$var" == "1" ]; then
+                updpkgsums
+                cd .. && buildpkg -c -p $folder
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
+            else
+                if [ "$var" == "0" ]; then
+                    updpkgsums
+                    time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
+                    mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM2"
+                else
+                    if [ "$var" == "2" ]; then
+                        updpkgsums
+                        time makepkg -srci
+                        mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM2"
+                    else
+                        if [ "$var" == "3" ]; then
+                            updpkgsums
+                            cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
+                            #cd .. && buildpkg -b unstable -c -p $folder
+                            mv /var/cache/manjaro-tools/pkg/unstable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done <$GITLABSOURCECUSTOM2 #< $GITHUBSOURCE1
 }
 #
 # Run the script once
@@ -314,20 +512,45 @@ function manualsync() {
         if [ "$SETGITHUBREPO" == "1" ]; then
             githubversion
             echo ""
-            echo -e "\e[1mGithub master branch updated\e[0m"
+            echo -e "$GITHUBMSG"
+            # Local pacman repository update - rename repo to your preference
+            repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
+            # end
         fi
         if [ "$SETCUSTGITHUBREPO" == "1" ]; then
             githubversioncustom
             echo ""
-            echo -e "\e[1mcustom repo updated\e[0m"
+            echo -e "$GITHUBMSGCUST"
+            # Local pacman repository update - rename repo to your preference
+            repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
+            # end
         fi
         if [ "$SETGITLABREPO" == "1" ]; then
             gitlabversion
             echo ""
-            echo -e "\e[1mGitlab master branch updated\e[0m"
+            echo -e "$GITLABMSG"
+            # Local pacman repository update - rename repo to your preference
+            repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
+            # end
+        fi
+        if [ "$SETGITLABREPOCUSTOM" == "1" ]; then
+            gitlabversioncustom
+            echo ""
+            echo -e "$GITLABMSGCUST"
+            # Local pacman repository update - rename repo to your preference
+            repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
+            # end
+        fi
+        if [ "$SETGITLABREPOCUSTOM2" == "1" ]; then
+            gitlabversioncustom2
+            echo ""
+            echo -e "$GITLABMSGCUST2"
+            # Local pacman repository update - rename repo to your preference
+            repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
+            # end
         fi
         # Local pacman repository update - rename repo to your preference
-        repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
+        #repo-add $HOME/autogit/$GITHUBBINARY/repo.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
         # end
         echo ""
         echo -e "\e[1m Time Passed: \e[0m"
@@ -345,20 +568,45 @@ function main() {
             if [ "$SETGITHUBREPO" == "1" ]; then
                 githubversion
                 echo ""
-                echo -e "\e[1mGithub master branch updated\e[0m"
+                echo -e "$GITHUBMSG"
+                # Local pacman repository update - rename repo to your preference
+                repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
+                # end
             fi
             if [ "$SETCUSTGITHUBREPO" == "1" ]; then
                 githubversioncustom
                 echo ""
-                echo -e "\e[1mcustom repo updated\e[0m"
+                echo -e "$GITHUBMSGCUST"
+                # Local pacman repository update - rename repo to your preference
+                repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
+                # end
             fi
             if [ "$SETGITLABREPO" == "1" ]; then
                 gitlabversion
                 echo ""
-                echo -e "\e[1mGitlab master branch updated\e[0m"
+                echo -e "$GITLABMSG"
+                # Local pacman repository update - rename repo to your preference
+                repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
+                # end
+            fi
+            if [ "$SETGITLABREPOCUSTOM" == "1" ]; then
+                gitlabversioncustom
+                echo ""
+                echo -e "$GITLABMSGCUST"
+                # Local pacman repository update - rename repo to your preference
+                repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
+                # end
+            fi
+            if [ "$SETGITLABREPOCUSTOM2" == "1" ]; then
+                gitlabversioncustom2
+                echo ""
+                echo -e "$GITLABMSGCUST2"
+                # Local pacman repository update - rename repo to your preference
+                repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
+                # end
             fi
             # Add repo and do a local pacman repository update after each update - rename repo to your preference
-            repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
+            #repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
             # end
             echo ""
             echo -e "\e[1m Time Passed: \e[0m"
