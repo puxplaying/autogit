@@ -634,6 +634,13 @@ function main() {
 #
 # Start script
 function modecheck() {
+    if [ -e "$DIR" ]
+		then
+			echo "local config found"
+		else
+			mkdir -p $DIR
+            cp -r /usr/share/autogit $DIR
+	fi
     if [ "$mode" == "1" ]; then
         main
     else
