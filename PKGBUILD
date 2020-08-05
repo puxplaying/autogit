@@ -1,7 +1,7 @@
 # Maintainer: puxplaying
 
 pkgname=autogit
-pkgver=0.14
+pkgver=0.15
 pkgrel=1
 pkgdesc="Auto build/maintain or install/update git PKGBUILDS"
 arch=(any)
@@ -11,7 +11,7 @@ depends=('pacman' 'sudo' 'bash' 'curl')
 makedepends=('git')
 optdepends=('manjaro-tools-pkg: Needed for Manjaro clean chroot package building')
 source=("$url/archive/$pkgver.tar.gz")
-md5sums=('b3a9ba7b6dbfb5754040aabb15391ead')
+md5sums=('SKIP')
 
 package () {
 	cd "$srcdir/$pkgname-$pkgver"
