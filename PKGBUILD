@@ -1,7 +1,7 @@
 # Maintainer: puxplaying
 
 pkgname=autogit
-pkgver=0.15
+pkgver=0.16
 pkgrel=1
 pkgdesc="Auto build/maintain or install/update git PKGBUILDS"
 arch=(any)
@@ -18,6 +18,7 @@ package () {
 	#install -Dm644 "update.desktop" "$pkgdir/usr/share/applications/update.desktop"
 	#install -Dm644 "update.png" "$pkgdir/usr/share/pixmaps/update.png"
 	install -Dm755 "$srcdir/$pkgname-$pkgver/autogit" "$pkgdir/usr/bin/autogit"
-	install -Dm644 $srcdir/$pkgname-$pkgver/reponames $pkgdir/usr/share/autogit/reponames/ 
-	install -Dm644 $srcdir/$pkgname-$pkgver/autogit.conf $pkgdir/usr/share/autogit/
+	mkdir -p $pkgdir/usr/share/autogit/reponames
+	cp -r reponames/ $pkgdir/usr/share/autogit/
+	cp -r autogit.conf $pkgdir/usr/share/autogit/
 }
