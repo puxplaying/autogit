@@ -3,16 +3,17 @@
 # Description:
 # Set the preferred package building config in the autogit.config file e.g. var=3
 #
+DIR=$HOME/autogit
+#
 # Check if local config exists
 if [ -e "$DIR" ]
-		then
-			echo "local config found"
-		else
-			mkdir -p $DIR
-            cp -r /usr/share/autogit $HOME
+then
+    echo "local config found"
+else
+    mkdir -p $DIR
+    cp -r /usr/share/autogit $HOME
 fi
 #
-DIR=$HOME/autogit
 # Load Config
 configdir=$DIR
 . $configdir/autogit.conf
@@ -523,40 +524,45 @@ function manualsync() {
             echo ""
             echo -e "$GITHUBMSG"
             # Local pacman repository update - rename repo to your preference
-            repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
-            # end
+            if [ "$REPOADD" == "1" ]; then
+                repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
+            fi
         fi
         if [ "$SETCUSTGITHUBREPO" == "1" ]; then
             githubversioncustom
             echo ""
             echo -e "$GITHUBMSGCUST"
             # Local pacman repository update - rename repo to your preference
-            repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
-            # end
+            if [ "$REPOADD" == "1" ]; then
+                repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
+            fi
         fi
         if [ "$SETGITLABREPO" == "1" ]; then
             gitlabversion
             echo ""
             echo -e "$GITLABMSG"
             # Local pacman repository update - rename repo to your preference
-            repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
-            # end
+            if [ "$REPOADD" == "1" ]; then
+                repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
+            fi
         fi
         if [ "$SETGITLABREPOCUSTOM" == "1" ]; then
             gitlabversioncustom
             echo ""
             echo -e "$GITLABMSGCUST"
             # Local pacman repository update - rename repo to your preference
-            repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
-            # end
+            if [ "$REPOADD" == "1" ]; then
+                repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
+            fi
         fi
         if [ "$SETGITLABREPOCUSTOM2" == "1" ]; then
             gitlabversioncustom2
             echo ""
             echo -e "$GITLABMSGCUST2"
             # Local pacman repository update - rename repo to your preference
-            repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
-            # end
+            if [ "$REPOADD" == "1" ]; then
+                repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
+            fi
         fi
         # Local pacman repository update - rename repo to your preference
         #repo-add $HOME/autogit/$GITHUBBINARY/repo.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
@@ -579,40 +585,45 @@ function main() {
                 echo ""
                 echo -e "$GITHUBMSG"
                 # Local pacman repository update - rename repo to your preference
-                repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
-                # end
+                if [ "$REPOADD" == "1" ]; then
+                    repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
+                fi
             fi
             if [ "$SETCUSTGITHUBREPO" == "1" ]; then
                 githubversioncustom
                 echo ""
                 echo -e "$GITHUBMSGCUST"
                 # Local pacman repository update - rename repo to your preference
-                repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
-                # end
+                if [ "$REPOADD" == "1" ]; then
+                    repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
+                fi
             fi
             if [ "$SETGITLABREPO" == "1" ]; then
                 gitlabversion
                 echo ""
                 echo -e "$GITLABMSG"
                 # Local pacman repository update - rename repo to your preference
-                repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
-                # end
+                if [ "$REPOADD" == "1" ]; then
+                    repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
+                fi
             fi
             if [ "$SETGITLABREPOCUSTOM" == "1" ]; then
                 gitlabversioncustom
                 echo ""
                 echo -e "$GITLABMSGCUST"
                 # Local pacman repository update - rename repo to your preference
-                repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
-                # end
+                if [ "$REPOADD" == "1" ]; then
+                    repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
+                fi
             fi
             if [ "$SETGITLABREPOCUSTOM2" == "1" ]; then
                 gitlabversioncustom2
                 echo ""
                 echo -e "$GITLABMSGCUST2"
                 # Local pacman repository update - rename repo to your preference
-                repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
-                # end
+                if [ "$REPOADD" == "1" ]; then
+                    repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
+                fi
             fi
             # Add repo and do a local pacman repository update after each update - rename repo to your preference
             #repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
