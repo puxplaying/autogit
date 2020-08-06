@@ -20,3 +20,7 @@ How to install:
 How to run:
 
 - `autogit`
+
+To run it automatically without a password prompt for `buildpkg`, it can be added to `sudoers` via:
+
+`echo "$USER ALL = NOPASSWD: /usr/bin/buildpkg" | sudo tee /etc/sudoers.d/$USER`
