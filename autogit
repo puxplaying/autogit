@@ -12,9 +12,7 @@ then
 else
     mkdir -p $DIR
     cp -r /usr/share/autogit $HOME
-    echo ""
-    echo -e " \e[1mLocal config generated \e[7m$HOME/autogit\e[0m"
-    echo -e " \e[1mplease configure \e[7mautogit.conf\e[0m \e[1mfor usage.\e[0m"
+    newconfig=1
 fi
 #
 # Load Config
@@ -663,6 +661,11 @@ function modecheck() {
         if [ "$mode" == "2" ]; then
             manualsync
         fi
+    fi
+    if [ "$newconfig" == "1" ]; then
+            echo ""
+            echo -e " \e[1mLocal config generated \e[7m$HOME/autogit\e[0m"
+            echo -e " \e[1mplease configure \e[7mautogit.conf\e[0m \e[1mfor usage.\e[0m"
     fi
 }
 modecheck
