@@ -9,3 +9,14 @@ More information on how to set it up is available in autogit.conf, examples are 
 Currently 2 Github and 3 Gitlab sources are available to use. There is no limitation of packages for each source, which need to be added to the *reponames* folder.
 
 It is currently limited to how much different repo folders can be created.
+
+How to install:
+
+- `sudo pacman -Syu base-devel git`
+- `git clone https://github.com/puxplaying/autogit.git `
+- `cd autogit`
+- `makepkg -srci`
+
+How to run:
+
+- `autogit`
