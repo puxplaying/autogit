@@ -36,6 +36,7 @@ function githubversion() {
         GITHUBCLONEURL=$GITHUBCLONEURLC
         GITHUBURL="$GITHUBURLC"$p"/"$BRANCH"/PKGBUILD"
         GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
         #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
         if [ -e "$DIR/packages/$p" ]; then # If file exists
             echo "file does exist local"
@@ -43,7 +44,8 @@ function githubversion() {
             ls
             #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
             localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ]; then
+            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
                 echo -e "\e[7mUp to date!\e[0m"
             else
                 echo -e "\e[7mOut of date! Updating ...\e[0m"
@@ -61,12 +63,12 @@ function githubversion() {
                 else
                     if [ "$var" == "0" ]; then
                         time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                        mv *.*.tar.xz "$DIR/$GITHUBBINARY"
+                        mv *.*.tar.* "$DIR/$GITHUBBINARY"
                         find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
                         if [ "$var" == "2" ]; then
                             time makepkg -srci
-                            mv *.*.tar.xz "$DIR/$GITHUBBINARY"
+                            mv *.*.tar.* "$DIR/$GITHUBBINARY"
                             find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         else
                             if [ "$var" == "3" ]; then
@@ -103,12 +105,12 @@ function githubversion() {
                 if [ "$var" == "0" ]; then
                     updpkgsums
                     time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                    mv *.*.tar.xz "$DIR/$GITHUBBINARY"
+                    mv *.*.tar.* "$DIR/$GITHUBBINARY"
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
                         time makepkg -srci
-                        mv *.*.tar.xz "$DIR/$GITHUBBINARY"
+                        mv *.*.tar.* "$DIR/$GITHUBBINARY"
                     else
                         if [ "$var" == "3" ]; then
                             updpkgsums
@@ -134,6 +136,7 @@ function githubversioncustom() {
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM
         GITHUBURL="$GITHUBURLCCUSTOM"$p"/"$BRANCH"/PKGBUILD"
         GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
         #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
         if [ -e "$DIR/packages/$p" ]; then # If file exists
             echo "file does exist local"
@@ -141,7 +144,8 @@ function githubversioncustom() {
             ls
             #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
             localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ]; then
+            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
                 echo -e "\e[7mUp to date!\e[0m"
             else
                 echo -e "\e[7mOut of date! Updating ...\e[0m"
@@ -159,12 +163,12 @@ function githubversioncustom() {
                 else
                     if [ "$var" == "0" ]; then
                         time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                        mv *.*.tar.xz "$DIR/$GITHUBBINARYCUSTOM"
+                        mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
                         find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
                         if [ "$var" == "2" ]; then
                             time makepkg -srci
-                            mv *.*.tar.xz "$DIR/$GITHUBBINARYCUSTOM"
+                            mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
                             find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         else
                             if [ "$var" == "3" ]; then
@@ -201,12 +205,12 @@ function githubversioncustom() {
                 if [ "$var" == "0" ]; then
                     updpkgsums
                     time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                    mv *.*.tar.xz "$DIR/$GITHUBBINARYCUSTOM"
+                    mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
                         time makepkg -srci
-                        mv *.*.tar.xz "$DIR/$GITHUBBINARYCUSTOM"
+                        mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
                     else
                         if [ "$var" == "3" ]; then
                             updpkgsums
@@ -233,6 +237,7 @@ function gitlabversion() {
         GITHUBCLONEURL=$GITLABCLONEURL
         GITHUBURL="$GITLABURLC"$p"/-/raw/"$BRANCH"/PKGBUILD"
         GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
         #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
         if [ -e "$DIR/packages/$p" ]; then # If file exists
             echo "file does exist local"
@@ -240,7 +245,8 @@ function gitlabversion() {
             ls
             #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
             localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ]; then
+            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
                 echo -e "\e[7mUp to date!\e[0m"
             else
                 echo -e "\e[7mOut of date! Updating ...\e[0m"
@@ -258,12 +264,12 @@ function gitlabversion() {
                 else
                     if [ "$var" == "0" ]; then
                         time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                        mv *.*.tar.xz "$DIR/$GITLABBINARY"
+                        mv *.*.tar.* "$DIR/$GITLABBINARY"
                         find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
                         if [ "$var" == "2" ]; then
                             time makepkg -srci
-                            mv *.*.tar.xz "$DIR/$GITLABBINARY"
+                            mv *.*.tar.* "$DIR/$GITLABBINARY"
                             find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         else
                             if [ "$var" == "3" ]; then
@@ -300,12 +306,12 @@ function gitlabversion() {
                 if [ "$var" == "0" ]; then
                     updpkgsums
                     time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                    mv *.*.tar.xz "$DIR/$GITLABBINARY"
+                    mv *.*.tar.* "$DIR/$GITLABBINARY"
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
                         time makepkg -srci
-                        mv *.*.tar.xz "$DIR/$GITLABBINARY"
+                        mv *.*.tar.* "$DIR/$GITLABBINARY"
                     else
                         if [ "$var" == "3" ]; then
                             updpkgsums
@@ -331,6 +337,7 @@ function gitlabversioncustom() {
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM
         GITHUBURL="$GITLABURLCCUSTOM"$p"/-/raw/"$BRANCH"/PKGBUILD"
         GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
         #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
         if [ -e "$DIR/packages/$p" ]; then # If file exists
             echo "file does exist local"
@@ -338,7 +345,8 @@ function gitlabversioncustom() {
             ls
             #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
             localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ]; then
+            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
                 echo -e "\e[7mUp to date!\e[0m"
             else
                 echo -e "\e[7mOut of date! Updating ...\e[0m"
@@ -356,12 +364,12 @@ function gitlabversioncustom() {
                 else
                     if [ "$var" == "0" ]; then
                         time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                        mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM"
+                        mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
                         find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
                         if [ "$var" == "2" ]; then
                             time makepkg -srci
-                            mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM"
+                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
                             find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         else
                             if [ "$var" == "3" ]; then
@@ -398,12 +406,12 @@ function gitlabversioncustom() {
                 if [ "$var" == "0" ]; then
                     updpkgsums
                     time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                    mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM"
+                    mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
                         time makepkg -srci
-                        mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM"
+                        mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
                     else
                         if [ "$var" == "3" ]; then
                             updpkgsums
@@ -429,6 +437,7 @@ function gitlabversioncustom2() {
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM2
         GITHUBURL="$GITLABURLCCUSTOM2"$p"/-/raw/"$BRANCH"/PKGBUILD"
         GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
         #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
         if [ -e "$DIR/packages/$p" ]; then # If file exists
             echo "file does exist local"
@@ -436,7 +445,8 @@ function gitlabversioncustom2() {
             ls
             #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
             localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ]; then
+            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
                 echo -e "\e[7mUp to date!\e[0m"
             else
                 echo -e "\e[7mOut of date! Updating ...\e[0m"
@@ -454,12 +464,12 @@ function gitlabversioncustom2() {
                 else
                     if [ "$var" == "0" ]; then
                         time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                        mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM2"
+                        mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
                         find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
                         if [ "$var" == "2" ]; then
                             time makepkg -srci
-                            mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM2"
+                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
                             find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         else
                             if [ "$var" == "3" ]; then
@@ -496,12 +506,12 @@ function gitlabversioncustom2() {
                 if [ "$var" == "0" ]; then
                     updpkgsums
                     time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6
-                    mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM2"
+                    mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
                         time makepkg -srci
-                        mv *.*.tar.xz "$DIR/$GITLABBINARYCUSTOM2"
+                        mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
                     else
                         if [ "$var" == "3" ]; then
                             updpkgsums
