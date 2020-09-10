@@ -73,8 +73,8 @@ function githubversion() {
                         else
                             if [ "$var" == "3" ]; then
                                 ls
+                                folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
-                                folder="$(ls)"
                                 buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                                 #buildpkg -b unstable -c -p $folder
                                 mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
@@ -173,8 +173,8 @@ function githubversioncustom() {
                         else
                             if [ "$var" == "3" ]; then
                                 ls
+                                folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
-                                folder="$(ls)"
                                 buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                                 #buildpkg -b unstable -c -p $folder
                                 mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
@@ -274,8 +274,8 @@ function gitlabversion() {
                         else
                             if [ "$var" == "3" ]; then
                                 ls
+                                folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
-                                folder="$(ls)"
                                 buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                                 #buildpkg -b unstable -c -p $folder
                                 mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
@@ -374,8 +374,8 @@ function gitlabversioncustom() {
                         else
                             if [ "$var" == "3" ]; then
                                 ls
+                                folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
-                                folder="$(ls)"
                                 buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                                 #buildpkg -b unstable -c -p $folder
                                 mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
@@ -474,8 +474,8 @@ function gitlabversioncustom2() {
                         else
                             if [ "$var" == "3" ]; then
                                 ls
+                                folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
-                                folder="$(ls)"
                                 buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder
                                 #buildpkg -b unstable -c -p $folder
                                 mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
