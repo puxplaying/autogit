@@ -55,8 +55,8 @@ function githubversion() {
                 git clean -f -d                # clear any other changes you've done
                 if [ "$var" == "1" ]; then
                     ls
+                    folder="$(printf '%q\n' "${PWD##*/}")"
                     cd ..
-                    folder="$(ls)"
                     buildpkg -c -p $folder
                     mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
                     find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
@@ -155,8 +155,8 @@ function githubversioncustom() {
                 git clean -f -d                # clear any other changes you've done
                 if [ "$var" == "1" ]; then
                     ls
+                    folder="$(printf '%q\n' "${PWD##*/}")"
                     cd ..
-                    folder="$(ls)"
                     buildpkg -c -p $folder
                     mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
                     find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
@@ -256,8 +256,8 @@ function gitlabversion() {
                 git clean -f -d                # clear any other changes you've done
                 if [ "$var" == "1" ]; then
                     ls
+                    folder="$(printf '%q\n' "${PWD##*/}")"
                     cd ..
-                    folder="$(ls)"
                     buildpkg -c -p $folder
                     mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
                     find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
@@ -356,8 +356,8 @@ function gitlabversioncustom() {
                 git clean -f -d                # clear any other changes you've done
                 if [ "$var" == "1" ]; then
                     ls
+                    folder="$(printf '%q\n' "${PWD##*/}")"
                     cd ..
-                    folder="$(ls)"
                     buildpkg -c -p $folder
                     mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
                     find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
@@ -456,8 +456,8 @@ function gitlabversioncustom2() {
                 git clean -f -d                # clear any other changes you've done
                 if [ "$var" == "1" ]; then
                     ls
+                    folder="$(printf '%q\n' "${PWD##*/}")"
                     cd ..
-                    folder="$(ls)"
                     buildpkg -c -p $folder
                     mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
                     find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
