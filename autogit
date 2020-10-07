@@ -88,7 +88,7 @@ function githubversion() {
                                 folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
                                 if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
+                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY"
                                     find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                                 else
                                     echo "Package did not build, removing ..."
@@ -142,7 +142,7 @@ function githubversion() {
                         if [ "$var" == "3" ]; then
                             updpkgsums
                             if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
+                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY"
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf $folder/PKGBUILD
@@ -218,7 +218,7 @@ function githubversioncustom() {
                                 folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
                                 if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
+                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
                                     find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                                 else
                                     echo "Package did not build, removing ..."
@@ -272,7 +272,7 @@ function githubversioncustom() {
                         if [ "$var" == "3" ]; then
                             updpkgsums
                             if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
+                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf $folder/PKGBUILD
@@ -349,7 +349,7 @@ function gitlabversion() {
                                 folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
                                 if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
+                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARY"
                                     find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                                 else
                                     echo "Package did not build, removing ..."
@@ -403,7 +403,7 @@ function gitlabversion() {
                         if [ "$var" == "3" ]; then
                             updpkgsums
                             if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
+                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARY"
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf $folder/PKGBUILD
@@ -479,7 +479,7 @@ function gitlabversioncustom() {
                                 folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
                                 if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
+                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
                                     find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                                 else
                                     echo "Package did not build, removing ..."
@@ -533,7 +533,7 @@ function gitlabversioncustom() {
                         if [ "$var" == "3" ]; then
                             updpkgsums
                             if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
+                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf $folder/PKGBUILD
@@ -609,7 +609,7 @@ function gitlabversioncustom2() {
                                 folder="$(printf '%q\n' "${PWD##*/}")"
                                 cd ..
                                 if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
+                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
                                     find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                                 else
                                     echo "Package did not build, removing ..."
@@ -663,7 +663,7 @@ function gitlabversioncustom2() {
                         if [ "$var" == "3" ]; then
                             updpkgsums
                             if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
+                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf $folder/PKGBUILD
