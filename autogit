@@ -40,8 +40,20 @@ function servercheck() {
             #echo "$Server1 is up!"
             echo
         else
-            echo "$Server1 is down ..exit!"
-            exit
+            echo "$Server1 no connection ..retrying!"
+            if ping -c$count -W1 $Server1 &>/dev/null; then
+                #echo "$Server1 is up!"
+                echo
+            else
+                echo "$Server1 no connection ..retrying!"
+                if ping -c$count -W1 $Server1 &>/dev/null; then
+                    #echo "$Server1 is up!"
+                    echo
+                else
+                    echo "$Server1 no connection ..exit!"
+                    exit
+                fi
+            fi
         fi
     fi
     
@@ -53,8 +65,20 @@ function servercheck() {
             #echo "$Server2 is up!"
             echo
         else
-            echo "$Server2 is down ..exit!"
-            exit
+            echo "$Server2 no connection ..retrying!"
+            if ping -c$count -W1 $Server2 &>/dev/null; then
+                #echo "$Server2 is up!"
+                echo
+            else
+                echo "$Server2 no connection ..retrying!"
+                if ping -c$count -W1 $Server2 &>/dev/null; then
+                    #echo "$Server2 is up!"
+                    echo
+                else
+                    echo "$Server2 no connection ..exit!"
+                    exit
+                fi
+            fi
         fi
     fi
     
@@ -66,8 +90,20 @@ function servercheck() {
             #echo "$Server3 is up!"
             echo
         else
-            echo "$Server3 is down ..exit!"
-            exit
+            echo "$Server3 no connection ..retrying!"
+            if ping -c$count -W1 $Server3 &>/dev/null; then
+                #echo "$Server3 is up!"
+                echo
+            else
+                echo "$Server3 no connection ..retrying!"
+                if ping -c$count -W1 $Server3 &>/dev/null; then
+                    #echo "$Server3 is up!"
+                    echo
+                else
+                    echo "$Server3 no connection ..exit!"
+                    exit
+                fi
+            fi
         fi
     fi
 }
