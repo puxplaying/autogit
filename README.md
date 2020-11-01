@@ -1,14 +1,14 @@
 # autogit
 
-Autogit is a Bash tool to automatically build and update Pacman applications from PKGBUILD's available on Github and Gitlab via configurable Makepkg or Manjaro Buildpkg commands. It can also create automatically repo names like *core*, *extra*, *community* and create/update a repo database file via `repo-add`.
+Autogit is a Bash tool to automatically build and update Pacman applications from PKGBUILD's available on Github,Gitlab and AUR via configurable Makepkg or Manjaro Buildpkg commands. It can also create automatically repo names like *core*, *extra*, *community* and create/update a repo database file via `repo-add`.
 
 It checks for the `pkgver` and `pkgrel` of the PKGBUILD to update applications and can either run once or in a loop with a timer setting.
 
 More information on how to set it up is available in autogit.conf, examples are included.
 
-Currently 2 Github and 6 Gitlab sources are available to use. There is no limitation of packages for each source, which need to be added to the *reponames* folder.
+Currently 6 Github and 6 Gitlab sources are available to use. There is no limitation of packages for each source, which need to be added to the *reponames* folder.
 
-It can currently create 2 different Github repo folders and 6 different Gitlab repo folders.
+It can currently create 6 different Github repo folders and 6 different Gitlab repo folders.
 
 How to install:
 
