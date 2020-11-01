@@ -6,8 +6,7 @@
 DIR=$HOME/autogit
 #
 # Check if local config exists
-if [ -e "$DIR" ]
-then
+if [ -e "$DIR" ]; then
     #echo "local config found"
     echo
 else
@@ -23,12 +22,13 @@ configdir=$DIR
 #
 GITHUBMSG="\e[1mGithub repo updated - \e[7m$GITHUBBINARY\e[0m\e[0m"
 GITHUBMSGCUST="\e[1mGithub repo updated - \e[7m$GITHUBBINARYCUSTOM\e[0m\e[0m"
-GITLABMSG="\e[1mGitlab repo updated - \e[7m$GITLABBINARY\e[0m\e[0m\e[0m"
-GITLABMSGCUST="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM\e[0m\e[0m\e[0m"
-GITLABMSGCUST2="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM2\e[0m\e[0m\e[0m"
-GITLABMSGCUST3="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM3\e[0m\e[0m\e[0m"
-GITLABMSGCUST4="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM4\e[0m\e[0m\e[0m"
-GITLABMSGCUST5="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM5\e[0m\e[0m\e[0m"
+GITLABMSG="\e[1mGitlab repo updated - \e[7m$GITLABBINARY\e[0m\e[0m"
+GITLABMSGCUST="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM\e[0m\e[0m"
+GITLABMSGCUST2="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM2\e[0m\e[0m"
+GITLABMSGCUST3="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM3\e[0m\e[0m"
+GITLABMSGCUST4="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM4\e[0m\e[0m"
+GITLABMSGCUST5="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM5\e[0m\e[0m"
+AURMSG="\e[1mAUR repo updated - \e[7m$AURBINARY\e[0m\e[0m"
 #
 # Check if server is online
 function servercheck() {
@@ -56,7 +56,7 @@ function servercheck() {
             fi
         fi
     fi
-    
+
     if [ -z ${Server2+x} ]; then
         #echo "var is unset"
         echo
@@ -81,7 +81,7 @@ function servercheck() {
             fi
         fi
     fi
-    
+
     if [ -z ${Server3+x} ]; then
         #echo "var is unset"
         echo
@@ -1142,12 +1142,139 @@ function gitlabversioncustom5() {
     done <$GITLABSOURCECUSTOM5 #< $GITHUBSOURCE1
 }
 #
+# Additional AUR repo
+# Update, install, build packages from AUR
+function aur() {
+    while IFS="" read -r p || [ -n "$p" ]; do
+        echo ""
+        cd "$DIR"
+        printf '%s\n' "$p" # Print package list entry
+        GITHUBURL="$AURCLONEURL""$p"
+        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
+        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
+        if [ -e "$DIR/packages/$p" ]; then # If file exists
+            echo "file does exist local"
+            cd "$DIR/packages/$p" # go to current package directory to compare it
+            ls
+            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
+            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
+            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
+                echo -e "\e[7mUp to date!\e[0m"
+            else
+                echo -e "\e[7mOut of date! Updating ...\e[0m"
+                git fetch origin
+                git checkout master
+                git reset --hard origin/master # reset files to how they were before
+                git clean -f -d                # clear any other changes you've done
+                if [ "$var" == "1" ]; then
+                    ls
+                    folder="$(printf '%q\n' "${PWD##*/}")"
+                    cd ..
+                    if buildpkg -c -p $folder; then
+                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$AURBINARY"
+                        find "$DIR/$AURBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    else
+                        echo "Package did not build, removing ..."
+                        rm -rf $folder/PKGBUILD
+                    fi
+                else
+                    if [ "$var" == "0" ]; then
+                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
+                            mv *.*.tar.* "$DIR/$AURBINARY"
+                            find "$DIR/$AURBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        else
+                            echo "Package did not build, removing ..."
+                            rm -rf PKGBUILD
+                        fi
+                    else
+                        if [ "$var" == "2" ]; then
+                            if time makepkg -srci --noconfirm; then
+                                echo "installed ..."
+                            else
+                                echo "Package did not build, removing ..."
+                                rm -rf PKGBUILD
+                            fi
+                        else
+                            if [ "$var" == "3" ]; then
+                                ls
+                                folder="$(printf '%q\n' "${PWD##*/}")"
+                                cd ..
+                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
+                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$AURBINARY"
+                                    find "$DIR/$AURBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                                else
+                                    echo "Package did not build, removing ..."
+                                    rm -rf $folder/PKGBUILD
+                                fi
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        else
+            echo "file does not exist local, downloading ..."
+            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
+            git clone "$AURURL""$p".git
+            folder="$(ls)"
+            echo "$folder"
+            mv $folder original
+            cd original
+            ls
+            mv * .* "$DIR/packages/$p"
+            cd "$DIR/packages/$p"
+            rm -rf original
+            mkdir -p "$DIR/$AURBINARY"
+            if [ "$var" == "1" ]; then
+                updpkgsums
+                if cd .. && buildpkg -c -p $folder; then
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$AURBINARY"
+                else
+                    echo "Package did not build, removing ..."
+                    rm -rf $folder/PKGBUILD
+                fi
+            else
+                if [ "$var" == "0" ]; then
+                    updpkgsums
+                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
+                        mv *.*.tar.* "$DIR/$AURBINARY"
+                    else
+                        echo "Package did not build, removing ..."
+                        rm -rf PKGBUILD
+                    fi
+                else
+                    if [ "$var" == "2" ]; then
+                        updpkgsums
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
+                        else
+                            echo "Package did not build, removing ..."
+                            rm -rf PKGBUILD
+                        fi
+                    else
+                        if [ "$var" == "3" ]; then
+                            updpkgsums
+                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
+                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$AURBINARY"
+                            else
+                                echo "Package did not build, removing ..."
+                                rm -rf $folder/PKGBUILD
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    done <$AURSOURCE #< $GITHUBSOURCE1
+}
+#
 # Run the script once
 function manualsync() {
     time {
         servercheck
         clear
-        
+
         if [ "$SETGITHUBREPO" == "1" ]; then
             githubversion
             echo ""
@@ -1220,6 +1347,15 @@ function manualsync() {
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
             fi
         fi
+        if [ "$AURREPO" == "1" ]; then
+            aur
+            echo ""
+            echo -e "$AURMSG"
+            # Local pacman repository update - rename repo to your preference
+            if [ "$REPOADD" == "1" ]; then
+                repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
+            fi
+        fi
         # Local pacman repository update - rename repo to your preference
         #repo-add $HOME/autogit/$GITHUBBINARY/repo.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
         # end
@@ -1231,10 +1367,10 @@ function manualsync() {
 # Run the script in a loop
 function main() {
     while true; do
-        
+
         servercheck
         clear
-        
+
         time {
             #githubversion
             if [ "$SETGITHUBREPO" == "1" ]; then
@@ -1309,6 +1445,15 @@ function main() {
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
                 fi
             fi
+            if [ "$AURREPO" == "1" ]; then
+                aur
+                echo ""
+                echo -e "$AURMSG"
+                # Local pacman repository update - rename repo to your preference
+                if [ "$REPOADD" == "1" ]; then
+                    repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
+                fi
+            fi
             # Add repo and do a local pacman repository update after each update - rename repo to your preference
             #repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
             # end
@@ -1328,10 +1473,10 @@ function main() {
         }
         countdown
         sleep 1 && main
-        
+
         # wait for input, e.g. by pressing ENTER:
         read -r
-        
+
     done
     # close while-loop
 }
