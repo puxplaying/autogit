@@ -157,9 +157,8 @@ function githubversion() {
                         fi
                     else
                         if [ "$var" == "2" ]; then
-                            if time makepkg -srci; then
-                                mv *.*.tar.* "$DIR/$GITHUBBINARY"
-                                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            if time makepkg -srci --noconfirm; then
+                                echo "installed ..."
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf PKGBUILD
@@ -214,8 +213,8 @@ function githubversion() {
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
-                        if time makepkg -srci; then
-                            mv *.*.tar.* "$DIR/$GITHUBBINARY"
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
                         else
                             echo "Package did not build, removing ..."
                             rm -rf PKGBUILD
@@ -287,9 +286,8 @@ function githubversioncustom() {
                         fi
                     else
                         if [ "$var" == "2" ]; then
-                            if time makepkg -srci; then
-                                mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
-                                find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            if time makepkg -srci --noconfirm; then
+                                echo "installed ..."
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf PKGBUILD
@@ -344,8 +342,8 @@ function githubversioncustom() {
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
-                        if time makepkg -srci; then
-                            mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
                         else
                             echo "Package did not build, removing ..."
                             rm -rf PKGBUILD
@@ -418,9 +416,8 @@ function gitlabversion() {
                         fi
                     else
                         if [ "$var" == "2" ]; then
-                            if time makepkg -srci; then
-                                mv *.*.tar.* "$DIR/$GITLABBINARY"
-                                find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            if time makepkg -srci --noconfirm; then
+                                echo "installed ..."
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf PKGBUILD
@@ -475,8 +472,8 @@ function gitlabversion() {
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
-                        if time makepkg -srci; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARY"
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
                         else
                             echo "Package did not build, removing ..."
                             rm -rf PKGBUILD
@@ -548,9 +545,8 @@ function gitlabversioncustom() {
                         fi
                     else
                         if [ "$var" == "2" ]; then
-                            if time makepkg -srci; then
-                                mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
-                                find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            if time makepkg -srci --noconfirm; then
+                                echo "installed ..."
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf PKGBUILD
@@ -605,8 +601,8 @@ function gitlabversioncustom() {
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
-                        if time makepkg -srci; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
                         else
                             echo "Package did not build, removing ..."
                             rm -rf PKGBUILD
@@ -678,9 +674,8 @@ function gitlabversioncustom2() {
                         fi
                     else
                         if [ "$var" == "2" ]; then
-                            if time makepkg -srci; then
-                                mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
-                                find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            if time makepkg -srci --noconfirm; then
+                                echo "installed ..."
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf PKGBUILD
@@ -735,8 +730,8 @@ function gitlabversioncustom2() {
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
-                        if time makepkg -srci; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
                         else
                             echo "Package did not build, removing ..."
                             rm -rf PKGBUILD
@@ -808,9 +803,8 @@ function gitlabversioncustom3() {
                         fi
                     else
                         if [ "$var" == "2" ]; then
-                            if time makepkg -srci; then
-                                mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM3"
-                                find "$DIR/$GITLABBINARYCUSTOM3" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            if time makepkg -srci --noconfirm; then
+                                echo "installed ..."
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf PKGBUILD
@@ -865,8 +859,8 @@ function gitlabversioncustom3() {
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
-                        if time makepkg -srci; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM3"
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
                         else
                             echo "Package did not build, removing ..."
                             rm -rf PKGBUILD
@@ -939,9 +933,8 @@ function gitlabversioncustom4() {
                         fi
                     else
                         if [ "$var" == "2" ]; then
-                            if time makepkg -srci; then
-                                mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM4"
-                                find "$DIR/$GITLABBINARYCUSTOM4" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            if time makepkg -srci --noconfirm; then
+                                echo "installed ..."
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf PKGBUILD
@@ -996,8 +989,8 @@ function gitlabversioncustom4() {
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
-                        if time makepkg -srci; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM4"
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
                         else
                             echo "Package did not build, removing ..."
                             rm -rf PKGBUILD
@@ -1070,9 +1063,8 @@ function gitlabversioncustom5() {
                         fi
                     else
                         if [ "$var" == "2" ]; then
-                            if time makepkg -srci; then
-                                mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM5"
-                                find "$DIR/$GITLABBINARYCUSTOM5" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            if time makepkg -srci --noconfirm; then
+                                echo "installed ..."
                             else
                                 echo "Package did not build, removing ..."
                                 rm -rf PKGBUILD
@@ -1127,8 +1119,8 @@ function gitlabversioncustom5() {
                 else
                     if [ "$var" == "2" ]; then
                         updpkgsums
-                        if time makepkg -srci; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM5"
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
                         else
                             echo "Package did not build, removing ..."
                             rm -rf PKGBUILD
@@ -1355,7 +1347,8 @@ function modecheck() {
     fi
     if [ "$newconfig" == "1" ]; then
         echo ""
-        echo -e " \e[1mLocal config generated \e[7m$HOME/autogit\e[0m"
+        echo -e " \e[1mLocal config generated @ \e[7m$HOME/autogit\e[0m"
+        echo ""
         echo -e " \e[1mplease configure \e[7mautogit.conf\e[0m \e[1mfor usage.\e[0m"
     fi
 }
