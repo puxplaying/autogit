@@ -1,8 +1,6 @@
 #!/bin/bash
 #
-# Description:
-# Set the preferred package building config in the autogit.config file e.g. var=3
-#
+# Set autogit directory
 DIR=$HOME/autogit
 #
 # Check if local config exists
@@ -18,8 +16,8 @@ fi
 # Load Config
 configdir=$DIR
 . $configdir/autogit.conf
-#. autogit.config
 #
+# Messages
 GITHUBMSG="\e[1mGithub repo updated - \e[7m$GITHUBBINARY\e[0m\e[0m"
 GITHUBMSGCUST="\e[1mGithub repo updated - \e[7m$GITHUBBINARYCUSTOM\e[0m\e[0m"
 GITHUBMSGCUST2="\e[1mGithub repo updated - \e[7m$GITHUBBINARYCUSTOM2\e[0m\e[0m"
@@ -111,7 +109,6 @@ function servercheck() {
         fi
     fi
 }
-#
 #
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversion() {
@@ -1790,10 +1787,11 @@ function aur() {
 #
 # Run the script once
 function manualsync() {
-    time {
-        servercheck
-        clear
 
+    servercheck
+    clear
+
+    time {
         if [ "$SETGITHUBREPO" == "1" ]; then
             githubversion
             echo ""
@@ -1911,9 +1909,6 @@ function manualsync() {
                 repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
             fi
         fi
-        # Local pacman repository update - rename repo to your preference
-        #repo-add $HOME/autogit/$GITHUBBINARY/repo.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
-        # end
         echo ""
         echo -e "\e[1m Time Passed: \e[0m"
     }
@@ -1927,7 +1922,6 @@ function main() {
         clear
 
         time {
-            #githubversion
             if [ "$SETGITHUBREPO" == "1" ]; then
                 githubversion
                 echo ""
@@ -2045,9 +2039,6 @@ function main() {
                     repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
                 fi
             fi
-            # Add repo and do a local pacman repository update after each update - rename repo to your preference
-            #repo-add $HOME/autogit/binary/repo.db.tar.gz $HOME/autogit/binary/*.pkg.* &>/dev/null
-            # end
             echo ""
             echo -e "\e[1m Time Passed: \e[0m"
         }
