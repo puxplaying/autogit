@@ -6,7 +6,7 @@ DIR=$HOME/autogit
 # Check if local config exists
 if [ -e "$DIR" ]; then
     #echo "local config found"
-    echo
+    echo &>/dev/null
 else
     mkdir -p $DIR
     cp -r /usr/share/autogit $HOME
@@ -32,78 +32,172 @@ GITLABMSGCUST4="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM4\e[0m\e[0m"
 GITLABMSGCUST5="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM5\e[0m\e[0m"
 AURMSG="\e[1mAUR repo updated - \e[7m$AURBINARY\e[0m\e[0m"
 #
+# Pingtest
+function pingtest() {
+    if ping -c$count -W1 $Server &>/dev/null; then
+        #echo "$Server is up!"
+        echo &>/dev/null
+    else
+        echo "$Server no connection ..retrying!"
+        if ping -c$count -W1 $Server &>/dev/null; then
+            #echo "$Server is up!"
+            echo &>/dev/null
+        else
+            echo "$Server no connection ..retrying!"
+            if ping -c$count -W1 $Server &>/dev/null; then
+                #echo "$Server is up!"
+                echo &>/dev/null
+            else
+                echo "$Server no connection ..exit!"
+                exit
+            fi
+        fi
+    fi
+}
 # Check if server is online
 function servercheck() {
     if [ -z ${Server1+x} ]; then
         #echo "var is unset"
-        echo
+        echo &>/dev/null
     else
-        if ping -c$count -W1 $Server1 &>/dev/null; then
-            #echo "$Server1 is up!"
-            echo
-        else
-            echo "$Server1 no connection ..retrying!"
-            if ping -c$count -W1 $Server1 &>/dev/null; then
-                #echo "$Server1 is up!"
-                echo
-            else
-                echo "$Server1 no connection ..retrying!"
-                if ping -c$count -W1 $Server1 &>/dev/null; then
-                    #echo "$Server1 is up!"
-                    echo
-                else
-                    echo "$Server1 no connection ..exit!"
-                    exit
-                fi
-            fi
-        fi
+        Server=$Server1
+        pingtest
     fi
 
     if [ -z ${Server2+x} ]; then
         #echo "var is unset"
-        echo
+        echo &>/dev/null
     else
-        if ping -c$count -W1 $Server2 &>/dev/null; then
-            #echo "$Server2 is up!"
-            echo
-        else
-            echo "$Server2 no connection ..retrying!"
-            if ping -c$count -W1 $Server2 &>/dev/null; then
-                #echo "$Server2 is up!"
-                echo
-            else
-                echo "$Server2 no connection ..retrying!"
-                if ping -c$count -W1 $Server2 &>/dev/null; then
-                    #echo "$Server2 is up!"
-                    echo
-                else
-                    echo "$Server2 no connection ..exit!"
-                    exit
-                fi
-            fi
-        fi
+        Server=$Server2
+        pingtest
     fi
 
     if [ -z ${Server3+x} ]; then
         #echo "var is unset"
-        echo
+        echo &>/dev/null
     else
-        if ping -c$count -W1 $Server3 &>/dev/null; then
-            #echo "$Server3 is up!"
-            echo
+        Server=$Server3
+        pingtest
+    fi
+}
+#
+# Universal Functions
+# Main functionality
+function maincheck() {
+    if [ -e "$DIR/packages/$p" ]; then # If file exists        
+        cd "$DIR/packages/$p" # go to current package directory to compare it
+        localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
+        localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
+        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
+
+        echo -e "\e[1mlocal  version: $localfile-$localfilepkgrel\e[0m"
+        echo -e "\e[1monline version: $GETPKGVER-$GETPKGREL\e[0m"
+
+        if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
+            echo -e "\e[7mUp to date!\e[0m"
         else
-            echo "$Server3 no connection ..retrying!"
-            if ping -c$count -W1 $Server3 &>/dev/null; then
-                #echo "$Server3 is up!"
-                echo
-            else
-                echo "$Server3 no connection ..retrying!"
-                if ping -c$count -W1 $Server3 &>/dev/null; then
-                    #echo "$Server3 is up!"
-                    echo
+            echo -e "\e[7mOut of date! Updating ...\e[0m"
+            setrepoadd=1
+            git fetch origin
+            git checkout master
+            git reset --hard origin/master # reset files to how they were before
+            git clean -f -d                # clear any other changes you've done
+            if [ "$var" == "1" ]; then
+                ls
+                folder="$(printf '%q\n' "${PWD##*/}")"
+                cd ..
+                if buildpkg -c -p $folder; then
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
+                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                 else
-                    echo "$Server3 no connection ..exit!"
-                    exit
+                    echo "Package did not build, removing ..."
+                    rm -rf $folder/PKGBUILD
+                fi
+            else
+                if [ "$var" == "0" ]; then
+                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
+                        mv *.*.tar.* "$DIR/$GITHUBBINARY"
+                        find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    else
+                        echo "Package did not build, removing ..."
+                        rm -rf PKGBUILD
+                    fi
+                else
+                    if [ "$var" == "2" ]; then
+                        if time makepkg -srci --noconfirm; then
+                            echo "installed ..."
+                        else
+                            echo "Package did not build, removing ..."
+                            rm -rf PKGBUILD
+                        fi
+                    else
+                        if [ "$var" == "3" ]; then
+                            ls
+                            folder="$(printf '%q\n' "${PWD##*/}")"
+                            cd ..
+                            if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
+                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY"
+                                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            else
+                                echo "Package did not build, removing ..."
+                                rm -rf $folder/PKGBUILD
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    else
+        echo "file does not exist local, downloading ..."
+        setrepoadd=1
+        mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
+        git clone "$GITHUBCLONEURL""$p".git
+        folder="$(ls)"
+        echo "$folder"
+        mv $folder original
+        cd original
+        ls
+        mv * .* "$DIR/packages/$p"
+        cd "$DIR/packages/$p"
+        rm -rf original
+        mkdir -p "$DIR/$GITHUBBINARY"
+        if [ "$var" == "1" ]; then
+            updpkgsums
+            if cd .. && buildpkg -c -p $folder; then
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
+            else
+                echo "Package did not build, removing ..."
+                rm -rf $folder/PKGBUILD
+            fi
+        else
+            if [ "$var" == "0" ]; then
+                updpkgsums
+                if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
+                    mv *.*.tar.* "$DIR/$GITHUBBINARY"
+                else
+                    echo "Package did not build, removing ..."
+                    rm -rf PKGBUILD
+                fi
+            else
+                if [ "$var" == "2" ]; then
+                    updpkgsums
+                    if time makepkg -srci --noconfirm; then
+                        echo "installed ..."
+                    else
+                        echo "Package did not build, removing ..."
+                        rm -rf PKGBUILD
+                    fi
+                else
+                    if [ "$var" == "3" ]; then
+                        updpkgsums
+                        if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
+                            mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY"
+                        else
+                            echo "Package did not build, removing ..."
+                            rm -rf $folder/PKGBUILD
+                        fi
+                    fi
                 fi
             fi
         fi
@@ -118,121 +212,10 @@ function githubversion() {
         printf '%s\n' "$p" # Print package list entry
         GITHUBCLONEURL=$GITHUBCLONEURLC
         GITHUBURL="$GITHUBURLC"$p"/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
-                        find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITHUBBINARY"
-                            find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY"
-                                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITHUBBINARY"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITHUBBINARY"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgithub1=1
+            setrepoadd=0
         fi
     done <$GITHUBSOURCE #< $GITHUBSOURCE1
 }
@@ -244,124 +227,14 @@ function githubversioncustom() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITHUBBINARYCUSTOM
         BRANCH=$BRANCHCUSTOM
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM
         GITHUBURL="$GITHUBURLCCUSTOM"$p"/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
-                        find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
-                            find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
-                                    find "$DIR/$GITHUBBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITHUBBINARYCUSTOM"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgithub2=1
+            setrepoadd=0
         fi
     done <$GITHUBSOURCECUSTOM #< $GITHUBSOURCE1
 }
@@ -373,124 +246,14 @@ function githubversioncustom2() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITHUBBINARYCUSTOM2
         BRANCH=$BRANCHCUSTOM2
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM2
         GITHUBURL="$GITHUBURLCCUSTOM2"$p"/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM2"
-                        find "$DIR/$GITHUBBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM2"
-                            find "$DIR/$GITHUBBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM2"
-                                    find "$DIR/$GITHUBBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITHUBBINARYCUSTOM2"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM2"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM2"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM2"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgithub3=1
+            setrepoadd=0
         fi
     done <$GITHUBSOURCECUSTOM2 #< $GITHUBSOURCE1
 }
@@ -502,124 +265,14 @@ function githubversioncustom3() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITHUBBINARYCUSTOM3
         BRANCH=$BRANCHCUSTOM3
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM3
         GITHUBURL="$GITHUBURLCCUSTOM3"$p"/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM3"
-                        find "$DIR/$GITHUBBINARYCUSTOM3" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM3"
-                            find "$DIR/$GITHUBBINARYCUSTOM3" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM3"
-                                    find "$DIR/$GITHUBBINARYCUSTOM3" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITHUBBINARYCUSTOM3"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM3"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM3"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM3"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgithub4=1
+            setrepoadd=0
         fi
     done <$GITHUBSOURCECUSTOM3 #< $GITHUBSOURCE1
 }
@@ -631,124 +284,14 @@ function githubversioncustom4() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITHUBBINARYCUSTOM4
         BRANCH=$BRANCHCUSTOM4
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM4
         GITHUBURL="$GITHUBURLCCUSTOM4"$p"/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM4"
-                        find "$DIR/$GITHUBBINARYCUSTOM4" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM4"
-                            find "$DIR/$GITHUBBINARYCUSTOM4" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM4"
-                                    find "$DIR/$GITHUBBINARYCUSTOM4" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITHUBBINARYCUSTOM4"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM4"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM4"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM4"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgithub5=1
+            setrepoadd=0
         fi
     done <$GITHUBSOURCECUSTOM4 #< $GITHUBSOURCE1
 }
@@ -760,124 +303,14 @@ function githubversioncustom5() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITHUBBINARYCUSTOM5
         BRANCH=$BRANCHCUSTOM5
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM5
         GITHUBURL="$GITHUBURLCCUSTOM5"$p"/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM5"
-                        find "$DIR/$GITHUBBINARYCUSTOM5" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM5"
-                            find "$DIR/$GITHUBBINARYCUSTOM5" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM5"
-                                    find "$DIR/$GITHUBBINARYCUSTOM5" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITHUBBINARYCUSTOM5"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM5"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITHUBBINARYCUSTOM5"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARYCUSTOM5"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgithub6=1
+            setrepoadd=0
         fi
     done <$GITHUBSOURCECUSTOM5 #< $GITHUBSOURCE1
 }
@@ -889,124 +322,14 @@ function gitlabversion() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITLABBINARY
         BRANCH=$BRANCHGITLAB
         GITHUBCLONEURL=$GITLABCLONEURL
         GITHUBURL="$GITLABURLC"$p"/-/raw/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
-                        find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARY"
-                            find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARY"
-                                    find "$DIR/$GITLABBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITLABBINARY"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARY"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITLABBINARY"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARY"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgitlab1=1
+            setrepoadd=0
         fi
     done <$GITLABSOURCE #< $GITHUBSOURCE1
 }
@@ -1018,124 +341,14 @@ function gitlabversioncustom() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITLABBINARYCUSTOM
         BRANCH=$BRANCHGITLABCUSTOM
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM
         GITHUBURL="$GITLABURLCCUSTOM"$p"/-/raw/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
-                        find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
-                            find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
-                                    find "$DIR/$GITLABBINARYCUSTOM" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITLABBINARYCUSTOM"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgitlab2=1
+            setrepoadd=0
         fi
     done <$GITLABSOURCECUSTOM #< $GITHUBSOURCE1
 }
@@ -1147,124 +360,14 @@ function gitlabversioncustom2() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITLABBINARYCUSTOM2
         BRANCH=$BRANCHGITLABCUSTOM2
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM2
         GITHUBURL="$GITLABURLCCUSTOM2"$p"/-/raw/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
-                        find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
-                            find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
-                                    find "$DIR/$GITLABBINARYCUSTOM2" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITLABBINARYCUSTOM2"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM2"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgitlab3=1
+            setrepoadd=0
         fi
     done <$GITLABSOURCECUSTOM2 #< $GITHUBSOURCE1
 }
@@ -1276,124 +379,14 @@ function gitlabversioncustom3() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITLABBINARYCUSTOM3
         BRANCH=$BRANCHGITLABCUSTOM3
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM3
         GITHUBURL="$GITLABURLCCUSTOM3"$p"/-/raw/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM3"
-                        find "$DIR/$GITLABBINARYCUSTOM3" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM3"
-                            find "$DIR/$GITLABBINARYCUSTOM3" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM3"
-                                    find "$DIR/$GITLABBINARYCUSTOM3" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITLABBINARYCUSTOM3"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM3"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM3"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM3"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgitlab4=1
+            setrepoadd=0
         fi
     done <$GITLABSOURCECUSTOM3 #< $GITHUBSOURCE1
 }
@@ -1406,124 +399,14 @@ function gitlabversioncustom4() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITLABBINARYCUSTOM4
         BRANCH=$BRANCHGITLABCUSTOM4
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM4
         GITHUBURL="$GITLABURLCCUSTOM4"$p"/-/raw/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM4"
-                        find "$DIR/$GITLABBINARYCUSTOM4" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM4"
-                            find "$DIR/$GITLABBINARYCUSTOM4" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM4"
-                                    find "$DIR/$GITLABBINARYCUSTOM4" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITLABBINARYCUSTOM4"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM4"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM4"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM4"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgitlab5=1
+            setrepoadd=0
         fi
     done <$GITLABSOURCECUSTOM4 #< $GITHUBSOURCE1
 }
@@ -1536,124 +419,14 @@ function gitlabversioncustom5() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$GITLABBINARYCUSTOM5
         BRANCH=$BRANCHGITLABCUSTOM5
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM5
         GITHUBURL="$GITLABURLCCUSTOM5"$p"/-/raw/"$BRANCH"/PKGBUILD"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM5"
-                        find "$DIR/$GITLABBINARYCUSTOM5" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM5"
-                            find "$DIR/$GITLABBINARYCUSTOM5" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM5"
-                                    find "$DIR/$GITLABBINARYCUSTOM5" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$GITHUBCLONEURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$GITLABBINARYCUSTOM5"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM5"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITLABBINARYCUSTOM5"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITLABBINARYCUSTOM5"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddgitlab6=1
+            setrepoadd=0
         fi
     done <$GITLABSOURCECUSTOM5 #< $GITHUBSOURCE1
 }
@@ -1665,122 +438,12 @@ function aur() {
         echo ""
         cd "$DIR"
         printf '%s\n' "$p" # Print package list entry
+        GITHUBBINARY=$AURBINARY
         GITHUBURL="$AURCLONEURL""$p"
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
-        #echo "$GETPKGVER"  # Get online "pkgver" from PKGBUILD
-        if [ -e "$DIR/packages/$p" ]; then # If file exists
-            echo "file does exist local"
-            cd "$DIR/packages/$p" # go to current package directory to compare it
-            ls
-            #url=$(curl --silent "https://raw.githubusercontent.com/"$p"/master/PKGBUILD" | grep 'pkgver=' | cut -c 8-)
-            localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-            localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-            if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-                echo -e "\e[7mUp to date!\e[0m"
-            else
-                echo -e "\e[7mOut of date! Updating ...\e[0m"
-                git fetch origin
-                git checkout master
-                git reset --hard origin/master # reset files to how they were before
-                git clean -f -d                # clear any other changes you've done
-                if [ "$var" == "1" ]; then
-                    ls
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-                    cd ..
-                    if buildpkg -c -p $folder; then
-                        mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$AURBINARY"
-                        find "$DIR/$AURBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf $folder/PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "0" ]; then
-                        if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                            mv *.*.tar.* "$DIR/$AURBINARY"
-                            find "$DIR/$AURBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "2" ]; then
-                            if time makepkg -srci --noconfirm; then
-                                echo "installed ..."
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf PKGBUILD
-                            fi
-                        else
-                            if [ "$var" == "3" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                    mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$AURBINARY"
-                                    find "$DIR/$AURBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                else
-                                    echo "Package did not build, removing ..."
-                                    rm -rf $folder/PKGBUILD
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        else
-            echo "file does not exist local, downloading ..."
-            mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-            git clone "$AURURL""$p".git
-            folder="$(ls)"
-            echo "$folder"
-            mv $folder original
-            cd original
-            ls
-            mv * .* "$DIR/packages/$p"
-            cd "$DIR/packages/$p"
-            rm -rf original
-            mkdir -p "$DIR/$AURBINARY"
-            if [ "$var" == "1" ]; then
-                updpkgsums
-                if cd .. && buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$AURBINARY"
-                else
-                    echo "Package did not build, removing ..."
-                    rm -rf $folder/PKGBUILD
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    updpkgsums
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$AURBINARY"
-                    else
-                        echo "Package did not build, removing ..."
-                        rm -rf PKGBUILD
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        updpkgsums
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo "Package did not build, removing ..."
-                            rm -rf PKGBUILD
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            updpkgsums
-                            if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$AURBINARY"
-                            else
-                                echo "Package did not build, removing ..."
-                                rm -rf $folder/PKGBUILD
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+        maincheck
+        if [ "$setrepoadd" == "1" ]; then
+            setrepoaddaur=1
+            setrepoadd=0
         fi
     done <$AURSOURCE #< $GITHUBSOURCE1
 }
@@ -1788,16 +451,17 @@ function aur() {
 # Run the script once
 function manualsync() {
 
-    servercheck
     clear
 
     time {
+        servercheck
         if [ "$SETGITHUBREPO" == "1" ]; then
             githubversion
             echo ""
             echo -e "$GITHUBMSG"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub1" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
             fi
         fi
@@ -1806,7 +470,8 @@ function manualsync() {
             echo ""
             echo -e "$GITHUBMSGCUST"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub2" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
             fi
         fi
@@ -1815,7 +480,8 @@ function manualsync() {
             echo ""
             echo -e "$GITHUBMSGCUST2"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub3" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM2/$GITHUBBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM2/*.pkg.* &>/dev/null
             fi
         fi
@@ -1824,7 +490,8 @@ function manualsync() {
             echo ""
             echo -e "$GITHUBMSGCUST3"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub4" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM3/$GITHUBBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM3/*.pkg.* &>/dev/null
             fi
         fi
@@ -1833,7 +500,8 @@ function manualsync() {
             echo ""
             echo -e "$GITHUBMSGCUST4"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub5" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM4/$GITHUBBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM4/*.pkg.* &>/dev/null
             fi
         fi
@@ -1842,7 +510,8 @@ function manualsync() {
             echo ""
             echo -e "$GITHUBMSGCUST5"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub6" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM5/$GITHUBBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM5/*.pkg.* &>/dev/null
             fi
         fi
@@ -1851,7 +520,8 @@ function manualsync() {
             echo ""
             echo -e "$GITLABMSG"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab1" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
             fi
         fi
@@ -1860,7 +530,8 @@ function manualsync() {
             echo ""
             echo -e "$GITLABMSGCUST"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab2" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
             fi
         fi
@@ -1869,7 +540,8 @@ function manualsync() {
             echo ""
             echo -e "$GITLABMSGCUST2"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab3" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
             fi
         fi
@@ -1878,7 +550,8 @@ function manualsync() {
             echo ""
             echo -e "$GITLABMSGCUST3"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab4" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM3/$GITLABBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM3/*.pkg.* &>/dev/null
             fi
         fi
@@ -1887,7 +560,8 @@ function manualsync() {
             echo ""
             echo -e "$GITLABMSGCUST4"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab5" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM4/$GITLABBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM4/*.pkg.* &>/dev/null
             fi
         fi
@@ -1896,7 +570,8 @@ function manualsync() {
             echo ""
             echo -e "$GITLABMSGCUST5"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab6" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
             fi
         fi
@@ -1905,7 +580,8 @@ function manualsync() {
             echo ""
             echo -e "$AURMSG"
             # Local pacman repository update - rename repo to your preference
-            if [ "$REPOADD" == "1" ]; then
+            if [ "$REPOADD" == "1" ] && [ "$setrepoaddaur" == "1" ]; then
+                echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
             fi
         fi
@@ -1918,16 +594,17 @@ function manualsync() {
 function main() {
     while true; do
 
-        servercheck
         clear
 
         time {
+            servercheck
             if [ "$SETGITHUBREPO" == "1" ]; then
                 githubversion
                 echo ""
                 echo -e "$GITHUBMSG"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub1" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
                 fi
             fi
@@ -1936,7 +613,8 @@ function main() {
                 echo ""
                 echo -e "$GITHUBMSGCUST"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub2" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
                 fi
             fi
@@ -1945,7 +623,8 @@ function main() {
                 echo ""
                 echo -e "$GITHUBMSGCUST2"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub3" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM2/$GITHUBBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM2/*.pkg.* &>/dev/null
                 fi
             fi
@@ -1954,7 +633,8 @@ function main() {
                 echo ""
                 echo -e "$GITHUBMSGCUST3"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub4" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM3/$GITHUBBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM3/*.pkg.* &>/dev/null
                 fi
             fi
@@ -1963,7 +643,8 @@ function main() {
                 echo ""
                 echo -e "$GITHUBMSGCUST4"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub5" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM4/$GITHUBBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM4/*.pkg.* &>/dev/null
                 fi
             fi
@@ -1972,7 +653,8 @@ function main() {
                 echo ""
                 echo -e "$GITHUBMSGCUST5"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub6" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM5/$GITHUBBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM5/*.pkg.* &>/dev/null
                 fi
             fi
@@ -1981,7 +663,8 @@ function main() {
                 echo ""
                 echo -e "$GITLABMSG"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab1" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
                 fi
             fi
@@ -1990,7 +673,8 @@ function main() {
                 echo ""
                 echo -e "$GITLABMSGCUST"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab2" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
                 fi
             fi
@@ -1999,7 +683,8 @@ function main() {
                 echo ""
                 echo -e "$GITLABMSGCUST2"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab3" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
                 fi
             fi
@@ -2008,7 +693,8 @@ function main() {
                 echo ""
                 echo -e "$GITLABMSGCUST3"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab4" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM3/$GITLABBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM3/*.pkg.* &>/dev/null
                 fi
             fi
@@ -2017,7 +703,8 @@ function main() {
                 echo ""
                 echo -e "$GITLABMSGCUST4"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab5" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM4/$GITLABBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM4/*.pkg.* &>/dev/null
                 fi
             fi
@@ -2026,7 +713,8 @@ function main() {
                 echo ""
                 echo -e "$GITLABMSGCUST5"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab6" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
                 fi
             fi
@@ -2035,7 +723,8 @@ function main() {
                 echo ""
                 echo -e "$AURMSG"
                 # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ]; then
+                if [ "$REPOADD" == "1" ] && [ "$setrepoaddaur" == "1" ]; then
+                    echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
                 fi
             fi
@@ -2043,7 +732,7 @@ function main() {
             echo -e "\e[1m Time Passed: \e[0m"
         }
         echo ""
-        echo -e "\e[1mPress \e[7mCtrl+C\e[0m \e[1mto stop autosync\e[0m"
+        echo -e "\e[1mPress \e[7mCtrl+C\e[0m \e[1mto stop autogit\e[0m"
         countdown() {
             secs=$timer
             shift
