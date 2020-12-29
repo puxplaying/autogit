@@ -1,9 +1,9 @@
-# Maintainer: puxplaying
+# Maintainer: Georg Wagner (@puxplaying) <puxplaying@gmail.com>
 
 pkgname=autogit
-pkgver=0.30
+pkgver=0.40
 pkgrel=1
-pkgdesc="Auto build/maintain or install/update git PKGBUILDS"
+pkgdesc="Auto build, update, install PKGBUILDS from Github, Gitlab and AUR"
 arch=(any)
 url="https://github.com/puxplaying/autogit"
 license=('GPL3')
@@ -15,8 +15,6 @@ md5sums=('SKIP')
 
 package () {
 	cd "$srcdir/$pkgname-$pkgver"
-	#install -Dm644 "update.desktop" "$pkgdir/usr/share/applications/update.desktop"
-	#install -Dm644 "update.png" "$pkgdir/usr/share/pixmaps/update.png"
 	install -Dm755 "$srcdir/$pkgname-$pkgver/autogit" "$pkgdir/usr/bin/autogit"
 	mkdir -p $pkgdir/usr/share/autogit/reponames
 	cp -r reponames/ $pkgdir/usr/share/autogit/
