@@ -436,6 +436,7 @@ function aur() {
         printf '%s\n' "$p" # Print package list entry
         GITHUBBINARY=$AURBINARY
         GITHUBURL="$AURCLONEURL""$p"
+        GITHUBCLONEURL="$AURURL"
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddaur=1
