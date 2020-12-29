@@ -163,7 +163,6 @@ function maincheck() {
         rm -rf original
         mkdir -p "$DIR/$GITHUBBINARY"
         if [ "$var" == "1" ]; then
-            updpkgsums
             if cd .. && buildpkg -c -p $folder; then
                 mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
             else
@@ -172,7 +171,6 @@ function maincheck() {
             fi
         else
             if [ "$var" == "0" ]; then
-                updpkgsums
                 if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
                     mv *.*.tar.* "$DIR/$GITHUBBINARY"
                 else
@@ -181,7 +179,6 @@ function maincheck() {
                 fi
             else
                 if [ "$var" == "2" ]; then
-                    updpkgsums
                     if time makepkg -srci --noconfirm; then
                         echo "installed ..."
                     else
@@ -190,7 +187,6 @@ function maincheck() {
                     fi
                 else
                     if [ "$var" == "3" ]; then
-                        updpkgsums
                         if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
                             mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY"
                         else
