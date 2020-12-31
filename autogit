@@ -84,20 +84,20 @@ function servercheck() {
 # Universal Functions
 # Main functionality
 function maincheck() {
-    if [ -e "$DIR/packages/$p" ]; then # If file exists        
-        cd "$DIR/packages/$p" # go to current package directory to compare it
+    if [ -e "$DIR/packages/$p" ]; then # If file exists
+        cd "$DIR/packages/$p"          # go to current package directory to compare it
         localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
         localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
         GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
         GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
 
-        echo -e "\e[1mlocal  version: $localfile-$localfilepkgrel\e[0m"
-        echo -e "\e[1monline version: $GETPKGVER-$GETPKGREL\e[0m"
+        echo -e "\e[1m⚿ local  version: $localfile-$localfilepkgrel\e[0m"
+        echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
 
         if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-            echo -e "\e[7mUp to date!\e[0m"
+            echo -e "\e[2m🗹 Up-to-Date\e[0m"
         else
-            echo -e "\e[7mOut of date! Updating ...\e[0m"
+            echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
             setrepoadd=1
             git fetch origin
             git checkout master
@@ -108,7 +108,7 @@ function maincheck() {
                 folder="$(printf '%q\n' "${PWD##*/}")"
                 cd ..
                 if buildpkg -c -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
+                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                     find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                 else
                     echo "Package did not build, removing ..."
@@ -117,7 +117,7 @@ function maincheck() {
             else
                 if [ "$var" == "0" ]; then
                     if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITHUBBINARY"
+                        mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                         find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
                         echo "Package did not build, removing ..."
@@ -137,7 +137,7 @@ function maincheck() {
                             folder="$(printf '%q\n' "${PWD##*/}")"
                             cd ..
                             if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY"
+                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                                 find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                             else
                                 echo "Package did not build, removing ..."
@@ -155,16 +155,16 @@ function maincheck() {
         git clone "$GITHUBCLONEURL""$p".git
         folder="$(ls)"
         echo "$folder"
-        mv $folder original
+        mv $folder original &>/dev/null
         cd original
         ls
-        mv * .* "$DIR/packages/$p"
+        mv * .* "$DIR/packages/$p" &>/dev/null
         cd "$DIR/packages/$p"
         rm -rf original
         mkdir -p "$DIR/$GITHUBBINARY"
         if [ "$var" == "1" ]; then
             if cd .. && buildpkg -c -p $folder; then
-                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY"
+                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
             else
                 echo "Package did not build, removing ..."
                 rm -rf $folder/PKGBUILD
@@ -172,7 +172,7 @@ function maincheck() {
         else
             if [ "$var" == "0" ]; then
                 if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                    mv *.*.tar.* "$DIR/$GITHUBBINARY"
+                    mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                 else
                     echo "Package did not build, removing ..."
                     rm -rf PKGBUILD
@@ -188,7 +188,7 @@ function maincheck() {
                 else
                     if [ "$var" == "3" ]; then
                         if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                            mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY"
+                            mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                         else
                             echo "Package did not build, removing ..."
                             rm -rf $folder/PKGBUILD
@@ -205,14 +205,16 @@ function githubversion() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBCLONEURL=$GITHUBCLONEURLC
         GITHUBURL="$GITHUBURLC"$p"/"$BRANCH"/PKGBUILD"
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub1=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITHUBSOURCE #< $GITHUBSOURCE1
 }
 #
@@ -222,7 +224,7 @@ function githubversioncustom() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM
         BRANCH=$BRANCHCUSTOM
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM
@@ -231,7 +233,9 @@ function githubversioncustom() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub2=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITHUBSOURCECUSTOM #< $GITHUBSOURCE1
 }
 #
@@ -241,7 +245,7 @@ function githubversioncustom2() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM2
         BRANCH=$BRANCHCUSTOM2
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM2
@@ -250,7 +254,9 @@ function githubversioncustom2() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub3=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITHUBSOURCECUSTOM2 #< $GITHUBSOURCE1
 }
 #
@@ -260,7 +266,7 @@ function githubversioncustom3() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM3
         BRANCH=$BRANCHCUSTOM3
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM3
@@ -269,7 +275,9 @@ function githubversioncustom3() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub4=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITHUBSOURCECUSTOM3 #< $GITHUBSOURCE1
 }
 #
@@ -279,7 +287,7 @@ function githubversioncustom4() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM4
         BRANCH=$BRANCHCUSTOM4
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM4
@@ -288,7 +296,9 @@ function githubversioncustom4() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub5=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITHUBSOURCECUSTOM4 #< $GITHUBSOURCE1
 }
 #
@@ -298,7 +308,7 @@ function githubversioncustom5() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM5
         BRANCH=$BRANCHCUSTOM5
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM5
@@ -307,7 +317,9 @@ function githubversioncustom5() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub6=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITHUBSOURCECUSTOM5 #< $GITHUBSOURCE1
 }
 #
@@ -317,7 +329,7 @@ function gitlabversion() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARY
         BRANCH=$BRANCHGITLAB
         GITHUBCLONEURL=$GITLABCLONEURL
@@ -326,7 +338,9 @@ function gitlabversion() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab1=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITLABSOURCE #< $GITHUBSOURCE1
 }
 #
@@ -336,7 +350,7 @@ function gitlabversioncustom() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM
         BRANCH=$BRANCHGITLABCUSTOM
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM
@@ -345,7 +359,9 @@ function gitlabversioncustom() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab2=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITLABSOURCECUSTOM #< $GITHUBSOURCE1
 }
 #
@@ -355,7 +371,7 @@ function gitlabversioncustom2() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM2
         BRANCH=$BRANCHGITLABCUSTOM2
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM2
@@ -364,7 +380,9 @@ function gitlabversioncustom2() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab3=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITLABSOURCECUSTOM2 #< $GITHUBSOURCE1
 }
 #
@@ -374,7 +392,7 @@ function gitlabversioncustom3() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM3
         BRANCH=$BRANCHGITLABCUSTOM3
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM3
@@ -383,7 +401,9 @@ function gitlabversioncustom3() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab4=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITLABSOURCECUSTOM3 #< $GITHUBSOURCE1
 }
 #
@@ -394,7 +414,7 @@ function gitlabversioncustom4() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM4
         BRANCH=$BRANCHGITLABCUSTOM4
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM4
@@ -403,7 +423,9 @@ function gitlabversioncustom4() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab5=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITLABSOURCECUSTOM4 #< $GITHUBSOURCE1
 }
 #
@@ -414,7 +436,7 @@ function gitlabversioncustom5() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM5
         BRANCH=$BRANCHGITLABCUSTOM5
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM5
@@ -423,7 +445,9 @@ function gitlabversioncustom5() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab6=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$GITLABSOURCECUSTOM5 #< $GITHUBSOURCE1
 }
 #
@@ -433,7 +457,7 @@ function aur() {
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR"
-        printf '%s\n' "$p" # Print package list entry
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$AURBINARY
         GITHUBURL="$AURCLONEURL""$p"
         GITHUBCLONEURL="$AURURL"
@@ -441,7 +465,9 @@ function aur() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddaur=1
             setrepoadd=0
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
     done <$AURSOURCE #< $GITHUBSOURCE1
 }
 #
@@ -582,8 +608,20 @@ function manualsync() {
                 repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
             fi
         fi
+        if [ -e "$DIR/packages/pkgs.txt" ]; then
+            echo ""
+            checked=$(cat "$DIR/packages/pkgs.txt" | wc -l)
+            echo -e "     \e[3m🗱  Checked Package(s): $checked\e[0m"
+            rm -rf "$DIR/packages/pkgs.txt"
+        fi
+        if [ -e "$DIR/packages/instpkgs.txt" ]; then
+            checked=$(cat "$DIR/packages/instpkgs.txt" | wc -l)
+            echo -e "     \e[3m🗱  Compiled Package(s): $checked\e[0m"
+            cat -b "$DIR/packages/instpkgs.txt"
+            rm -rf "$DIR/packages/instpkgs.txt"
+        fi
         echo ""
-        echo -e "\e[1m Time Passed: \e[0m"
+        echo -e "\e[1m Elapsed Time: \e[0m"
     }
 }
 #
@@ -725,11 +763,23 @@ function main() {
                     repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
                 fi
             fi
+            if [ -e "$DIR/packages/pkgs.txt" ]; then
+                echo ""
+                checked=$(cat "$DIR/packages/pkgs.txt" | wc -l)
+                echo -e "     \e[3m🗱  Checked Package(s): $checked\e[0m"
+                rm -rf "$DIR/packages/pkgs.txt"
+            fi
+            if [ -e "$DIR/packages/instpkgs.txt" ]; then
+                checked=$(cat "$DIR/packages/instpkgs.txt" | wc -l)
+                echo -e "     \e[3m🗱  Compiled Package(s): $checked\e[0m"
+                cat -b "$DIR/packages/instpkgs.txt"
+                rm -rf "$DIR/packages/instpkgs.txt"
+            fi
             echo ""
-            echo -e "\e[1m Time Passed: \e[0m"
+            echo -e "\e[1m Elapsed Time: \e[0m"
         }
         echo ""
-        echo -e "\e[1mPress \e[7mCtrl+C\e[0m \e[1mto stop autogit\e[0m"
+        echo -e "\e[1mPress \e[7m[Ctrl]\e[0m+\e[1m\e[7m[C]\e[0m \e[1mto stop \e[3mautogit\e[0m"
         countdown() {
             secs=$timer
             shift
