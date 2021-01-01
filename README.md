@@ -24,3 +24,5 @@ How to run:
 To run it automatically without a password prompt for `buildpkg`, it can be added to `sudoers` via:
 
 `echo "$USER ALL = NOPASSWD: /usr/bin/buildpkg" | sudo tee /etc/sudoers.d/$USER`
+
+![123](https://user-images.githubusercontent.com/28549766/103438530-0b81d300-4c34-11eb-9ea1-a49542fabc4f.png)
