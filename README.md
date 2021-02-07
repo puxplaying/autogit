@@ -6,9 +6,9 @@ It checks for the `pkgver` and `pkgrel` of the PKGBUILD to update applications a
 
 More information on how to set it up is available in autogit.conf, examples are included.
 
-Currently 6 Github and 6 Gitlab sources are available to use. There is no limitation of packages for each source, which need to be added to the *reponames* folder.
+Currently the AUR, 6 Github and 6 Gitlab sources are available to use. There is no limitation of packages for each source, which need to be added to the *reponames* folder source files.
 
-It can currently create 6 different Github repo folders and 6 different Gitlab repo folders.
+In sum 13 different repos can be enabled/created and will be updated together.
 
 How to install:
 
