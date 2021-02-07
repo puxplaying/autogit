@@ -485,7 +485,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub1" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $DIR/$GITHUBBINARY/*.pkg.* &>/dev/null
                 setrepoaddgithub1=0
             fi
         fi
@@ -496,7 +496,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub2" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $DIR/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
                 setrepoaddgithub2=0
             fi
         fi
@@ -507,7 +507,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub3" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITHUBBINARYCUSTOM2/$GITHUBBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM2/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITHUBBINARYCUSTOM2/$GITHUBBINARYCUSTOM2.db.tar.gz $DIR/$GITHUBBINARYCUSTOM2/*.pkg.* &>/dev/null
                 setrepoaddgithub3=0
             fi
         fi
@@ -518,7 +518,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub4" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITHUBBINARYCUSTOM3/$GITHUBBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM3/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITHUBBINARYCUSTOM3/$GITHUBBINARYCUSTOM3.db.tar.gz $DIR/$GITHUBBINARYCUSTOM3/*.pkg.* &>/dev/null
                 setrepoaddgithub4=0
             fi
         fi
@@ -529,7 +529,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub5" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITHUBBINARYCUSTOM4/$GITHUBBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM4/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITHUBBINARYCUSTOM4/$GITHUBBINARYCUSTOM4.db.tar.gz $DIR/$GITHUBBINARYCUSTOM4/*.pkg.* &>/dev/null
                 setrepoaddgithub5=0
             fi
         fi
@@ -540,7 +540,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub6" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITHUBBINARYCUSTOM5/$GITHUBBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM5/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITHUBBINARYCUSTOM5/$GITHUBBINARYCUSTOM5.db.tar.gz $DIR/$GITHUBBINARYCUSTOM5/*.pkg.* &>/dev/null
                 setrepoaddgithub6=0
             fi
         fi
@@ -551,7 +551,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab1" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITLABBINARY/$GITLABBINARY.db.tar.gz $DIR/$GITLABBINARY/*.pkg.* &>/dev/null
                 setrepoaddgitlab1=0
             fi
         fi
@@ -562,7 +562,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab2" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $DIR/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
                 setrepoaddgitlab2=0
             fi
         fi
@@ -573,7 +573,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab3" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $DIR/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
                 setrepoaddgitlab3=0
             fi
         fi
@@ -584,7 +584,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab4" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITLABBINARYCUSTOM3/$GITLABBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM3/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITLABBINARYCUSTOM3/$GITLABBINARYCUSTOM3.db.tar.gz $DIR/$GITLABBINARYCUSTOM3/*.pkg.* &>/dev/null
                 setrepoaddgitlab4=0
             fi
         fi
@@ -595,7 +595,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab5" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITLABBINARYCUSTOM4/$GITLABBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM4/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITLABBINARYCUSTOM4/$GITLABBINARYCUSTOM4.db.tar.gz $DIR/$GITLABBINARYCUSTOM4/*.pkg.* &>/dev/null
                 setrepoaddgitlab5=0
             fi
         fi
@@ -606,7 +606,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab6" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
+                repo-add $DIR/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $DIR/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
                 setrepoaddgitlab6=0
             fi
         fi
@@ -617,7 +617,7 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddaur" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
+                repo-add $DIR/$AURBINARY/$AURBINARY.db.tar.gz $DIR/$AURBINARY/*.pkg.* &>/dev/null
                 setrepoaddaur=0
             fi
         fi
@@ -653,7 +653,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub1" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $DIR/$GITHUBBINARY/*.pkg.* &>/dev/null
                     setrepoaddgithub1=0
                 fi
             fi
@@ -664,7 +664,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub2" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $DIR/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
                     setrepoaddgithub2=0
                 fi
             fi
@@ -675,7 +675,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub3" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITHUBBINARYCUSTOM2/$GITHUBBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM2/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITHUBBINARYCUSTOM2/$GITHUBBINARYCUSTOM2.db.tar.gz $DIR/$GITHUBBINARYCUSTOM2/*.pkg.* &>/dev/null
                     setrepoaddgithub3=0
                 fi
             fi
@@ -686,7 +686,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub4" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITHUBBINARYCUSTOM3/$GITHUBBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM3/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITHUBBINARYCUSTOM3/$GITHUBBINARYCUSTOM3.db.tar.gz $DIR/$GITHUBBINARYCUSTOM3/*.pkg.* &>/dev/null
                     setrepoaddgithub4=0
                 fi
             fi
@@ -697,7 +697,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub5" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITHUBBINARYCUSTOM4/$GITHUBBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM4/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITHUBBINARYCUSTOM4/$GITHUBBINARYCUSTOM4.db.tar.gz $DIR/$GITHUBBINARYCUSTOM4/*.pkg.* &>/dev/null
                     setrepoaddgithub5=0
                 fi
             fi
@@ -708,7 +708,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub6" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITHUBBINARYCUSTOM5/$GITHUBBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM5/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITHUBBINARYCUSTOM5/$GITHUBBINARYCUSTOM5.db.tar.gz $DIR/$GITHUBBINARYCUSTOM5/*.pkg.* &>/dev/null
                     setrepoaddgithub6=0
                 fi
             fi
@@ -719,7 +719,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab1" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITLABBINARY/$GITLABBINARY.db.tar.gz $DIR/$GITLABBINARY/*.pkg.* &>/dev/null
                     setrepoaddgitlab1=0
                 fi
             fi
@@ -730,7 +730,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab2" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $DIR/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
                     setrepoaddgitlab2=0
                 fi
             fi
@@ -741,7 +741,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab3" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $DIR/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
                     setrepoaddgitlab3=0
                 fi
             fi
@@ -752,7 +752,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab4" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITLABBINARYCUSTOM3/$GITLABBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM3/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITLABBINARYCUSTOM3/$GITLABBINARYCUSTOM3.db.tar.gz $DIR/$GITLABBINARYCUSTOM3/*.pkg.* &>/dev/null
                     setrepoaddgitlab4=0
                 fi
             fi
@@ -763,7 +763,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab5" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITLABBINARYCUSTOM4/$GITLABBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM4/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITLABBINARYCUSTOM4/$GITLABBINARYCUSTOM4.db.tar.gz $DIR/$GITLABBINARYCUSTOM4/*.pkg.* &>/dev/null
                     setrepoaddgitlab5=0
                 fi
             fi
@@ -774,7 +774,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab6" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
+                    repo-add $DIR/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $DIR/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
                     setrepoaddgitlab6=0
                 fi
             fi
@@ -785,7 +785,7 @@ function main() {
                 # Local pacman repository update - rename repo to your preference
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddaur" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
+                    repo-add $DIR/$AURBINARY/$AURBINARY.db.tar.gz $DIR/$AURBINARY/*.pkg.* &>/dev/null
                     setrepoaddaur=0
                 fi
             fi
@@ -836,7 +836,7 @@ function modecheck() {
     fi
     if [ "$newconfig" == "1" ]; then
         echo ""
-        echo -e " \e[1mLocal config generated @ \e[7m$HOME/autogit\e[0m"
+        echo -e " \e[1mLocal config generated @ \e[7m$DIR\e[0m"
         echo ""
         echo -e " \e[1mplease configure \e[7mautogit.conf\e[0m \e[1mfor usage.\e[0m"
     fi
