@@ -486,6 +486,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub1" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
+                setrepoaddgithub1=0
             fi
         fi
         if [ "$SETCUSTGITHUBREPO" == "1" ]; then
@@ -496,6 +497,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub2" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
+                setrepoaddgithub2=0
             fi
         fi
         if [ "$SETCUSTGITHUBREPO2" == "1" ]; then
@@ -506,6 +508,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub3" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM2/$GITHUBBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM2/*.pkg.* &>/dev/null
+                setrepoaddgithub3=0
             fi
         fi
         if [ "$SETCUSTGITHUBREPO3" == "1" ]; then
@@ -516,6 +519,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub4" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM3/$GITHUBBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM3/*.pkg.* &>/dev/null
+                setrepoaddgithub4=0
             fi
         fi
         if [ "$SETCUSTGITHUBREPO4" == "1" ]; then
@@ -526,6 +530,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub5" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM4/$GITHUBBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM4/*.pkg.* &>/dev/null
+                setrepoaddgithub5=0
             fi
         fi
         if [ "$SETCUSTGITHUBREPO5" == "1" ]; then
@@ -536,6 +541,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub6" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITHUBBINARYCUSTOM5/$GITHUBBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM5/*.pkg.* &>/dev/null
+                setrepoaddgithub6=0
             fi
         fi
         if [ "$SETGITLABREPO" == "1" ]; then
@@ -546,6 +552,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab1" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
+                setrepoaddgitlab1=0
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM" == "1" ]; then
@@ -556,6 +563,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab2" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
+                setrepoaddgitlab2=0
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM2" == "1" ]; then
@@ -566,6 +574,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab3" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
+                setrepoaddgitlab3=0
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM3" == "1" ]; then
@@ -576,6 +585,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab4" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM3/$GITLABBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM3/*.pkg.* &>/dev/null
+                setrepoaddgitlab4=0
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM4" == "1" ]; then
@@ -586,6 +596,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab5" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM4/$GITLABBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM4/*.pkg.* &>/dev/null
+                setrepoaddgitlab5=0
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM5" == "1" ]; then
@@ -596,6 +607,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab6" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
+                setrepoaddgitlab6=0
             fi
         fi
         if [ "$AURREPO" == "1" ]; then
@@ -606,6 +618,7 @@ function manualsync() {
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddaur" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
                 repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
+                setrepoaddaur=0
             fi
         fi
         if [ -e "$DIR/packages/pkgs.txt" ]; then
@@ -641,6 +654,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub1" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $HOME/autogit/$GITHUBBINARY/*.pkg.* &>/dev/null
+                    setrepoaddgithub1=0
                 fi
             fi
             if [ "$SETCUSTGITHUBREPO" == "1" ]; then
@@ -651,6 +665,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub2" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
+                    setrepoaddgithub2=0
                 fi
             fi
             if [ "$SETCUSTGITHUBREPO2" == "1" ]; then
@@ -661,6 +676,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub3" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM2/$GITHUBBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM2/*.pkg.* &>/dev/null
+                    setrepoaddgithub3=0
                 fi
             fi
             if [ "$SETCUSTGITHUBREPO3" == "1" ]; then
@@ -671,6 +687,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub4" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM3/$GITHUBBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM3/*.pkg.* &>/dev/null
+                    setrepoaddgithub4=0
                 fi
             fi
             if [ "$SETCUSTGITHUBREPO4" == "1" ]; then
@@ -681,6 +698,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub5" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM4/$GITHUBBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM4/*.pkg.* &>/dev/null
+                    setrepoaddgithub5=0
                 fi
             fi
             if [ "$SETCUSTGITHUBREPO5" == "1" ]; then
@@ -691,6 +709,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub6" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITHUBBINARYCUSTOM5/$GITHUBBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITHUBBINARYCUSTOM5/*.pkg.* &>/dev/null
+                    setrepoaddgithub6=0
                 fi
             fi
             if [ "$SETGITLABREPO" == "1" ]; then
@@ -701,6 +720,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab1" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARY/$GITLABBINARY.db.tar.gz $HOME/autogit/$GITLABBINARY/*.pkg.* &>/dev/null
+                    setrepoaddgitlab1=0
                 fi
             fi
             if [ "$SETGITLABREPOCUSTOM" == "1" ]; then
@@ -711,6 +731,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab2" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
+                    setrepoaddgitlab2=0
                 fi
             fi
             if [ "$SETGITLABREPOCUSTOM2" == "1" ]; then
@@ -721,6 +742,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab3" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
+                    setrepoaddgitlab3=0
                 fi
             fi
             if [ "$SETGITLABREPOCUSTOM3" == "1" ]; then
@@ -731,6 +753,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab4" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM3/$GITLABBINARYCUSTOM3.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM3/*.pkg.* &>/dev/null
+                    setrepoaddgitlab4=0
                 fi
             fi
             if [ "$SETGITLABREPOCUSTOM4" == "1" ]; then
@@ -741,6 +764,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab5" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM4/$GITLABBINARYCUSTOM4.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM4/*.pkg.* &>/dev/null
+                    setrepoaddgitlab5=0
                 fi
             fi
             if [ "$SETGITLABREPOCUSTOM5" == "1" ]; then
@@ -751,6 +775,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab6" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $HOME/autogit/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
+                    setrepoaddgitlab6=0
                 fi
             fi
             if [ "$AURREPO" == "1" ]; then
@@ -761,6 +786,7 @@ function main() {
                 if [ "$REPOADD" == "1" ] && [ "$setrepoaddaur" == "1" ]; then
                     echo -e "\e[1mUpdating Database ...\e[0m"
                     repo-add $HOME/autogit/$AURBINARY/$AURBINARY.db.tar.gz $HOME/autogit/$AURBINARY/*.pkg.* &>/dev/null
+                    setrepoaddaur=0
                 fi
             fi
             if [ -e "$DIR/packages/pkgs.txt" ]; then
