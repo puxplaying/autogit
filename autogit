@@ -107,7 +107,7 @@ function maincheck() {
                 ls
                 folder="$(printf '%q\n' "${PWD##*/}")"
                 cd ..
-                if buildpkg -c -p $folder; then
+                if buildpkg -c -a multilib -p $folder; then
                     mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                     find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                 else
