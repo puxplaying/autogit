@@ -99,10 +99,10 @@ function maincheck() {
         else
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
             setrepoadd=1
-            git fetch origin
-            git checkout master
-            git reset --hard origin/master # reset files to how they were before
-            git clean -f -d                # clear any other changes you've done
+            git fetch origin &>/dev/null
+            git checkout origin &>/dev/null
+            git reset --hard origin # reset files to how they were before
+            git clean -f -d         # clear any other changes you've done
             if [ "$var" == "1" ]; then
                 ls
                 folder="$(printf '%q\n' "${PWD##*/}")"
