@@ -31,6 +31,7 @@ GITLABMSGCUST3="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM3\e[0m\e[0m"
 GITLABMSGCUST4="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM4\e[0m\e[0m"
 GITLABMSGCUST5="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM5\e[0m\e[0m"
 AURMSG="\e[1mAUR repo updated - \e[7m$AURBINARY\e[0m\e[0m"
+FAILEDBUILDMSG="\e[31mPackage build failed, removing ...\e[0m"
 #
 # Pingtest
 function pingtest() {
@@ -111,7 +112,7 @@ function maincheck() {
                     mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                     find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                 else
-                    echo "Package did not build, removing ..."
+                    echo -e "$FAILEDBUILDMSG"
                     rm -rf $folder/PKGBUILD
                 fi
             else
@@ -120,7 +121,7 @@ function maincheck() {
                         mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                         find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                     else
-                        echo "Package did not build, removing ..."
+                        echo -e "$FAILEDBUILDMSG"
                         rm -rf PKGBUILD
                     fi
                 else
@@ -128,7 +129,7 @@ function maincheck() {
                         if time makepkg -srci --noconfirm; then
                             echo "installed ..."
                         else
-                            echo "Package did not build, removing ..."
+                            echo -e "$FAILEDBUILDMSG"
                             rm -rf PKGBUILD
                         fi
                     else
@@ -140,7 +141,7 @@ function maincheck() {
                                 mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                                 find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                             else
-                                echo "Package did not build, removing ..."
+                                echo -e "$FAILEDBUILDMSG"
                                 rm -rf $folder/PKGBUILD
                             fi
                         fi
@@ -149,7 +150,7 @@ function maincheck() {
             fi
         fi
     else
-        echo "file does not exist local, downloading ..."
+        echo "Package does not exist local, downloading ..."
         setrepoadd=1
         mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
         git clone "$GITHUBCLONEURL""$p".git
@@ -166,7 +167,7 @@ function maincheck() {
             if cd .. && buildpkg -c -p $folder; then
                 mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
             else
-                echo "Package did not build, removing ..."
+                echo -e "$FAILEDBUILDMSG"
                 rm -rf $folder/PKGBUILD
             fi
         else
@@ -174,7 +175,7 @@ function maincheck() {
                 if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
                     mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                 else
-                    echo "Package did not build, removing ..."
+                    echo -e "$FAILEDBUILDMSG"
                     rm -rf PKGBUILD
                 fi
             else
@@ -182,7 +183,7 @@ function maincheck() {
                     if time makepkg -srci --noconfirm; then
                         echo "installed ..."
                     else
-                        echo "Package did not build, removing ..."
+                        echo -e "$FAILEDBUILDMSG"
                         rm -rf PKGBUILD
                     fi
                 else
@@ -190,7 +191,7 @@ function maincheck() {
                         if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
                             mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                         else
-                            echo "Package did not build, removing ..."
+                            echo -e "$FAILEDBUILDMSG"
                             rm -rf $folder/PKGBUILD
                         fi
                     fi
