@@ -99,7 +99,6 @@ function maincheck() {
             echo -e "\e[2m🗹 Up-to-Date\e[0m"
         else
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
-            setrepoadd=1
             git fetch origin &>/dev/null
             git checkout origin &>/dev/null
             git reset --hard origin # reset files to how they were before
@@ -111,18 +110,22 @@ function maincheck() {
                 if buildpkg -c -a multilib -p $folder; then
                     mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                     find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    setrepoadd=1
                 else
                     echo -e "$FAILEDBUILDMSG"
                     rm -rf $folder/PKGBUILD
+                    failedbuild=1
                 fi
             else
                 if [ "$var" == "0" ]; then
                     if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
                         mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                         find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        setrepoadd=1
                     else
                         echo -e "$FAILEDBUILDMSG"
                         rm -rf PKGBUILD
+                        failedbuild=1
                     fi
                 else
                     if [ "$var" == "2" ]; then
@@ -131,6 +134,7 @@ function maincheck() {
                         else
                             echo -e "$FAILEDBUILDMSG"
                             rm -rf PKGBUILD
+                            failedbuild=1
                         fi
                     else
                         if [ "$var" == "3" ]; then
@@ -140,9 +144,11 @@ function maincheck() {
                             if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
                                 mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
                                 find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                                setrepoadd=1
                             else
                                 echo -e "$FAILEDBUILDMSG"
                                 rm -rf $folder/PKGBUILD
+                                failedbuild=1
                             fi
                         fi
                     fi
@@ -151,7 +157,6 @@ function maincheck() {
         fi
     else
         echo "Package does not exist local, downloading ..."
-        setrepoadd=1
         mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
         git clone "$GITHUBCLONEURL""$p".git
         folder="$(ls)"
@@ -166,17 +171,23 @@ function maincheck() {
         if [ "$var" == "1" ]; then
             if cd .. && buildpkg -c -p $folder; then
                 mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                setrepoadd=1
             else
                 echo -e "$FAILEDBUILDMSG"
                 rm -rf $folder/PKGBUILD
+                failedbuild=1
             fi
         else
             if [ "$var" == "0" ]; then
                 if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
                     mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    setrepoadd=1
                 else
                     echo -e "$FAILEDBUILDMSG"
                     rm -rf PKGBUILD
+                    failedbuild=1
                 fi
             else
                 if [ "$var" == "2" ]; then
@@ -185,14 +196,18 @@ function maincheck() {
                     else
                         echo -e "$FAILEDBUILDMSG"
                         rm -rf PKGBUILD
+                        failedbuild=1
                     fi
                 else
                     if [ "$var" == "3" ]; then
                         if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
                             mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                            find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            setrepoadd=1
                         else
                             echo -e "$FAILEDBUILDMSG"
                             rm -rf $folder/PKGBUILD
+                            failedbuild=1
                         fi
                     fi
                 fi
@@ -213,9 +228,13 @@ function githubversion() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub1=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null  # Compiled packages
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null                            # Checked Packages
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITHUBSOURCE #< $GITHUBSOURCE1
 }
 #
@@ -237,6 +256,10 @@ function githubversioncustom() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITHUBSOURCECUSTOM #< $GITHUBSOURCE1
 }
 #
@@ -258,6 +281,10 @@ function githubversioncustom2() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITHUBSOURCECUSTOM2 #< $GITHUBSOURCE1
 }
 #
@@ -279,6 +306,10 @@ function githubversioncustom3() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITHUBSOURCECUSTOM3 #< $GITHUBSOURCE1
 }
 #
@@ -300,6 +331,10 @@ function githubversioncustom4() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITHUBSOURCECUSTOM4 #< $GITHUBSOURCE1
 }
 #
@@ -321,6 +356,10 @@ function githubversioncustom5() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITHUBSOURCECUSTOM5 #< $GITHUBSOURCE1
 }
 #
@@ -342,6 +381,10 @@ function gitlabversion() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITLABSOURCE #< $GITHUBSOURCE1
 }
 #
@@ -363,6 +406,10 @@ function gitlabversioncustom() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITLABSOURCECUSTOM #< $GITHUBSOURCE1
 }
 #
@@ -384,6 +431,10 @@ function gitlabversioncustom2() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITLABSOURCECUSTOM2 #< $GITHUBSOURCE1
 }
 #
@@ -405,6 +456,10 @@ function gitlabversioncustom3() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITLABSOURCECUSTOM3 #< $GITHUBSOURCE1
 }
 #
@@ -427,6 +482,10 @@ function gitlabversioncustom4() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITLABSOURCECUSTOM4 #< $GITHUBSOURCE1
 }
 #
@@ -449,6 +508,10 @@ function gitlabversioncustom5() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$GITLABSOURCECUSTOM5 #< $GITHUBSOURCE1
 }
 #
@@ -469,6 +532,10 @@ function aur() {
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
+        if [ "$failedbuild" == "1" ]; then
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            failedbuild=0
+        fi
     done <$AURSOURCE #< $GITHUBSOURCE1
 }
 #
@@ -633,6 +700,12 @@ function manualsync() {
             echo -e "     \e[3m🗱  Compiled Package(s): $checked\e[0m"
             cat -b "$DIR/packages/instpkgs.txt"
             rm -rf "$DIR/packages/instpkgs.txt"
+        fi
+        if [ -e "$DIR/packages/failed.txt" ]; then
+            checked=$(cat "$DIR/packages/failed.txt" | wc -l)
+            echo -e "     \e[3m🗱  Failed to Build: $checked\e[0m"
+            cat -b "$DIR/packages/failed.txt"
+            rm -rf "$DIR/packages/failed.txt"
         fi
         echo ""
         echo -e "\e[1m Elapsed Time: \e[0m"
@@ -801,6 +874,12 @@ function main() {
                 echo -e "     \e[3m🗱  Compiled Package(s): $checked\e[0m"
                 cat -b "$DIR/packages/instpkgs.txt"
                 rm -rf "$DIR/packages/instpkgs.txt"
+            fi
+            if [ -e "$DIR/packages/failed.txt" ]; then
+                checked=$(cat "$DIR/packages/failed.txt" | wc -l)
+                echo -e "     \e[3m🗱  Failed to Build: $checked\e[0m"
+                cat -b "$DIR/packages/failed.txt"
+                rm -rf "$DIR/packages/failed.txt"
             fi
             echo ""
             echo -e "\e[1m Elapsed Time: \e[0m"
