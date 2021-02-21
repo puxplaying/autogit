@@ -99,7 +99,7 @@ function maincheck() {
             echo -e "\e[2m🗹 Up-to-Date\e[0m"
         else
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
-            git fetch origin/$BRANCH &>/dev/null
+            git fetch origin &>/dev/null
             git checkout origin/$BRANCH &>/dev/null
             git reset --hard origin/$BRANCH # reset files to how they were before
             git clean -f -d         # clear any other changes you've done
