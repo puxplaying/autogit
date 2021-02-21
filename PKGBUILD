@@ -1,8 +1,8 @@
 # Maintainer: Georg Wagner (@puxplaying) <puxplaying@gmail.com>
 
 pkgname=autogit
-pkgver=1.2
-pkgrel=2
+pkgver=1.3
+pkgrel=1
 pkgdesc="Auto build, update, install PKGBUILDS from Github, Gitlab and AUR"
 arch=(any)
 url="https://github.com/puxplaying/autogit"
