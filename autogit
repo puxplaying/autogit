@@ -85,8 +85,8 @@ function servercheck() {
 # Universal Functions
 # Main functionality
 function maincheck() {
-    if [ -e "$DIR/packages/$p" ]; then # If file exists
-        cd "$DIR/packages/$p"          # go to current package directory to compare it
+    if [ -e "$DIR/packages/$GITDIR/$p" ]; then # If file exists
+        cd "$DIR/packages/$GITDIR/$p"          # go to current package directory to compare it
         localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
         localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
         GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
@@ -157,15 +157,15 @@ function maincheck() {
         fi
     else
         echo "Package does not exist local, downloading ..."
-        mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
+        mkdir -p "$DIR/packages/$GITDIR/$p" && cd "$DIR/packages/$GITDIR/$p"
         git clone --single-branch --branch "$BRANCH" "$GITHUBCLONEURL""$p".git
         folder="$(ls)"
         echo "$folder"
         mv $folder original &>/dev/null
         cd original
         ls
-        mv * .* "$DIR/packages/$p" &>/dev/null
-        cd "$DIR/packages/$p"
+        mv * .* "$DIR/packages/$GITDIR/$p" &>/dev/null
+        cd "$DIR/packages/$GITDIR/$p"
         rm -rf original
         mkdir -p "$DIR/$GITHUBBINARY"
         if [ "$var" == "1" ]; then
@@ -224,6 +224,7 @@ function githubversion() {
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBCLONEURL=$GITHUBCLONEURLC
         GITHUBURL="$GITHUBURLC"$p"/"$BRANCH"/PKGBUILD"
+        GITDIR=Github1
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub1=1
@@ -249,6 +250,7 @@ function githubversioncustom() {
         BRANCH=$BRANCHCUSTOM
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM
         GITHUBURL="$GITHUBURLCCUSTOM"$p"/"$BRANCH"/PKGBUILD"
+        GITDIR=Github2
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub2=1
@@ -274,6 +276,7 @@ function githubversioncustom2() {
         BRANCH=$BRANCHCUSTOM2
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM2
         GITHUBURL="$GITHUBURLCCUSTOM2"$p"/"$BRANCH"/PKGBUILD"
+        GITDIR=Github3
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub3=1
@@ -299,6 +302,7 @@ function githubversioncustom3() {
         BRANCH=$BRANCHCUSTOM3
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM3
         GITHUBURL="$GITHUBURLCCUSTOM3"$p"/"$BRANCH"/PKGBUILD"
+        GITDIR=Github4
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub4=1
@@ -324,6 +328,7 @@ function githubversioncustom4() {
         BRANCH=$BRANCHCUSTOM4
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM4
         GITHUBURL="$GITHUBURLCCUSTOM4"$p"/"$BRANCH"/PKGBUILD"
+        GITDIR=Github5
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub5=1
@@ -349,6 +354,7 @@ function githubversioncustom5() {
         BRANCH=$BRANCHCUSTOM5
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM5
         GITHUBURL="$GITHUBURLCCUSTOM5"$p"/"$BRANCH"/PKGBUILD"
+        GITDIR=Github6
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub6=1
@@ -374,6 +380,7 @@ function gitlabversion() {
         BRANCH=$BRANCHGITLAB
         GITHUBCLONEURL=$GITLABCLONEURL
         GITHUBURL="$GITLABURLC"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITDIR=Gitlab1
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab1=1
@@ -399,6 +406,7 @@ function gitlabversioncustom() {
         BRANCH=$BRANCHGITLABCUSTOM
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM
         GITHUBURL="$GITLABURLCCUSTOM"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITDIR=Gitlab2
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab2=1
@@ -424,6 +432,7 @@ function gitlabversioncustom2() {
         BRANCH=$BRANCHGITLABCUSTOM2
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM2
         GITHUBURL="$GITLABURLCCUSTOM2"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITDIR=Gitlab3
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab3=1
@@ -449,6 +458,7 @@ function gitlabversioncustom3() {
         BRANCH=$BRANCHGITLABCUSTOM3
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM3
         GITHUBURL="$GITLABURLCCUSTOM3"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITDIR=Gitlab4
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab4=1
@@ -475,6 +485,7 @@ function gitlabversioncustom4() {
         BRANCH=$BRANCHGITLABCUSTOM4
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM4
         GITHUBURL="$GITLABURLCCUSTOM4"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITDIR=Gitlab5
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab5=1
@@ -501,6 +512,7 @@ function gitlabversioncustom5() {
         BRANCH=$BRANCHGITLABCUSTOM5
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM5
         GITHUBURL="$GITLABURLCCUSTOM5"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITDIR=Gitlab6
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab6=1
@@ -526,6 +538,7 @@ function aur() {
         BRANCH=master
         GITHUBURL="$AURCLONEURL""$p"
         GITHUBCLONEURL="$AURURL"
+        GITDIR=AUR
         maincheck
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddaur=1
