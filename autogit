@@ -99,9 +99,9 @@ function maincheck() {
             echo -e "\e[2m🗹 Up-to-Date\e[0m"
         else
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
-            git fetch origin &>/dev/null
-            git checkout origin &>/dev/null
-            git reset --hard origin # reset files to how they were before
+            git fetch origin/$BRANCH &>/dev/null
+            git checkout origin/$BRANCH &>/dev/null
+            git reset --hard origin/$BRANCH # reset files to how they were before
             git clean -f -d         # clear any other changes you've done
             if [ "$var" == "1" ]; then
                 ls
@@ -158,7 +158,7 @@ function maincheck() {
     else
         echo "Package does not exist local, downloading ..."
         mkdir -p "$DIR/packages/$p" && cd "$DIR/packages/$p"
-        git clone "$GITHUBCLONEURL""$p".git
+        git clone --single-branch --branch "$BRANCH" "$GITHUBCLONEURL""$p".git
         folder="$(ls)"
         echo "$folder"
         mv $folder original &>/dev/null
@@ -523,6 +523,7 @@ function aur() {
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$AURBINARY
+        BRANCH=master
         GITHUBURL="$AURCLONEURL""$p"
         GITHUBCLONEURL="$AURURL"
         maincheck
