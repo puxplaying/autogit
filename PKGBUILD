@@ -1,13 +1,13 @@
 # Maintainer: Georg Wagner (@puxplaying) <puxplaying@gmail.com>
 
 pkgname=autogit
-pkgver=1.4
+pkgver=1.3.2-dev
 pkgrel=1
 pkgdesc="Auto build, update, install PKGBUILDS from Github, Gitlab and AUR"
 arch=(any)
 url="https://github.com/puxplaying/autogit"
 license=('GPL3')
-depends=('pacman' 'sudo' 'bash' 'curl')
+depends=('pacman' 'sudo' 'bash' 'curl' 'fzf')
 makedepends=('git')
 optdepends=('manjaro-tools-pkg: Needed for Manjaro clean chroot package building')
 source=("$url/archive/$pkgver.tar.gz")
