@@ -82,7 +82,6 @@ function servercheck() {
     fi
 }
 #
-# Universal Functions
 # Main functionality
 function maincheck() {
     if [ -e "$DIR/packages/$GITDIR/$p" ]; then # If file exists
@@ -102,7 +101,7 @@ function maincheck() {
             git fetch origin &>/dev/null
             git checkout origin/$BRANCH &>/dev/null
             git reset --hard origin/$BRANCH # reset files to how they were before
-            git clean -f -d         # clear any other changes you've done
+            git clean -f -d                 # clear any other changes you've done
             if [ "$var" == "1" ]; then
                 ls
                 folder="$(printf '%q\n' "${PWD##*/}")"
@@ -229,11 +228,11 @@ function githubversion() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub1=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null  # Compiled packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null # Compiled packages
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null                            # Checked Packages
+        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null # Checked Packages
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITHUBSOURCE #< $GITHUBSOURCE1
@@ -259,7 +258,7 @@ function githubversioncustom() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITHUBSOURCECUSTOM #< $GITHUBSOURCE1
@@ -285,7 +284,7 @@ function githubversioncustom2() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITHUBSOURCECUSTOM2 #< $GITHUBSOURCE1
@@ -311,7 +310,7 @@ function githubversioncustom3() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITHUBSOURCECUSTOM3 #< $GITHUBSOURCE1
@@ -337,7 +336,7 @@ function githubversioncustom4() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITHUBSOURCECUSTOM4 #< $GITHUBSOURCE1
@@ -363,7 +362,7 @@ function githubversioncustom5() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITHUBSOURCECUSTOM5 #< $GITHUBSOURCE1
@@ -389,7 +388,7 @@ function gitlabversion() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITLABSOURCE #< $GITHUBSOURCE1
@@ -415,7 +414,7 @@ function gitlabversioncustom() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITLABSOURCECUSTOM #< $GITHUBSOURCE1
@@ -441,7 +440,7 @@ function gitlabversioncustom2() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITLABSOURCECUSTOM2 #< $GITHUBSOURCE1
@@ -467,7 +466,7 @@ function gitlabversioncustom3() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITLABSOURCECUSTOM3 #< $GITHUBSOURCE1
@@ -494,7 +493,7 @@ function gitlabversioncustom4() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITLABSOURCECUSTOM4 #< $GITHUBSOURCE1
@@ -521,7 +520,7 @@ function gitlabversioncustom5() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$GITLABSOURCECUSTOM5 #< $GITHUBSOURCE1
@@ -547,7 +546,7 @@ function aur() {
         fi
         printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
         if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null    # Failed to build packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
             failedbuild=0
         fi
     done <$AURSOURCE #< $GITHUBSOURCE1
@@ -919,7 +918,336 @@ function main() {
     # close while-loop
 }
 #
-# Start script
+# Select the source to edit for the fzf menu
+function pkgchooser() {
+    # Check if -d (DRY RUN) is run for a different text
+    if [ "$dryrun" == "1" ]; then
+        # Select the source to edit
+        SELECTFILE=$(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to remove package(s)
+    from selected source file. 
+    ESC to quit. [DRY RUN] " --preview 'cat "$HOME"/autogit/reponames/{}' --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
+        $SELECTFILE
+    else
+        # Check if -b (REBUILD) is run for a different text
+        if [ "$rebuild" == "1" ]; then
+            # Select the source to edit
+            SELECTFILE=$(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to rebuild package(s)
+    from selected source file. 
+    ESC to quit. " --preview 'cat "$HOME"/autogit/reponames/{}' --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
+            $SELECTFILE
+        else
+            # Select the source to edit
+            SELECTFILE=$(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to remove package(s)
+    from selected source file. 
+    ESC to quit. " --preview 'cat "$HOME"/autogit/reponames/{}' --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
+            $SELECTFILE
+        fi
+    fi
+
+    # Open file content to manipulate it
+    # Check if -d (DRY RUN) is run for a different text
+    if [ "$dryrun" == "1" ]; then
+        if [ -s "$DIR"/reponames/.selected.txt ]; then
+            GETSELECTED=$(cat "$DIR"/reponames/.selected.txt)
+            OPENFILE=$(cat "$DIR"/reponames/"$GETSELECTED" | fzf -i --multi --reverse --info=inline --prompt="Enter string > " --header="    TAB key to (un)select.
+    ENTER to remove selected source(s), binary(s) 
+    and package list entry(s). ESC to quit. [DRY RUN] " | xargs -ro >"$DIR"/reponames/.output.txt)
+            $OPENFILE
+            awk -v ORS='\n' '{ for (i = 1; i <= NF; i++) print $i }' "$DIR"/reponames/.output.txt >"$DIR"/reponames/.toremove.txt
+
+            # Set a start flag for the "removepkgs" function when the second fzf menu has been run
+            startflag=1
+        fi
+    else
+        # Open file content to manipulate it
+        # Check if -b (REBUILD) is run for a different text
+        if [ "$rebuild" == "1" ]; then
+            if [ -s "$DIR"/reponames/.selected.txt ]; then
+                GETSELECTED=$(cat "$DIR"/reponames/.selected.txt)
+                OPENFILE=$(cat "$DIR"/reponames/"$GETSELECTED" | fzf -i --multi --reverse --info=inline --prompt="Enter string > " --header="    TAB key to (un)select.
+    ENTER to rebuild selected package(s) 
+    ESC to quit. " | xargs -ro >"$DIR"/reponames/.output.txt)
+                $OPENFILE
+                awk -v ORS='\n' '{ for (i = 1; i <= NF; i++) print $i }' "$DIR"/reponames/.output.txt >"$DIR"/reponames/.toremove.txt
+
+                # Set a start flag for the "removepkgs" function when the second fzf menu has been run
+                startflag=1
+            fi
+        else
+            # Open file content to manipulate it
+            if [ -s "$DIR"/reponames/.selected.txt ]; then
+                GETSELECTED=$(cat "$DIR"/reponames/.selected.txt)
+                OPENFILE=$(cat "$DIR"/reponames/"$GETSELECTED" | fzf -i --multi --reverse --info=inline --prompt="Enter string > " --header="    TAB key to (un)select.
+    ENTER to remove selected source(s), binary(s) 
+    and package list entry(s). ESC to quit. " | xargs -ro >"$DIR"/reponames/.output.txt)
+                $OPENFILE
+                awk -v ORS='\n' '{ for (i = 1; i <= NF; i++) print $i }' "$DIR"/reponames/.output.txt >"$DIR"/reponames/.toremove.txt
+
+                # Set a start flag for the "removepkgs" function when the second fzf menu has been run
+                startflag=1
+            fi
+        fi
+    fi
+}
+
+# Remove selected package(s)
+function removepkgs() {
+    clear
+    while IFS="" read -r p || [ -n "$p" ]; do
+        echo ""
+        cd "$DIR"
+        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        # Use the eval function which resolves in this example the GETSELECTED variable before the awk is run.
+        SOURCEPKGDIR=$(eval "awk '/"${GETSELECTED}"/ && /SOURCE/'" '"$DIR"/autogit.conf' | grep -E -o ".{0,20}=" | rev | cut -c 2- | rev) # Find Reponame for source folder
+        if [ "$SOURCEPKGDIR" == "GITHUBSOURCE" ]; then
+            PKGDIR=Github1
+            PKGBIN=$GITHUBBINARY
+        else
+            if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM" ]; then
+                PKGDIR=Github2
+                PKGBIN=$GITHUBBINARYCUSTOM
+            else
+                if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM2" ]; then
+                    PKGDIR=Github3
+                    PKGBIN=$GITHUBBINARYCUSTOM2
+                else
+                    if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM3" ]; then
+                        PKGDIR=Github4
+                        PKGBIN=$GITHUBBINARYCUSTOM3
+                    else
+                        if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM4" ]; then
+                            PKGDIR=Github5
+                            PKGBIN=$GITHUBBINARYCUSTOM4
+                        else
+                            if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM5" ]; then
+                                PKGDIR=Github6
+                                PKGBIN=$GITHUBBINARYCUSTOM5
+                            else
+                                if [ "$SOURCEPKGDIR" == "GITLABSOURCE" ]; then
+                                    PKGDIR=Gitlab1
+                                    PKGBIN=$GITLABBINARY
+                                else
+                                    if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM" ]; then
+                                        PKGDIR=Gitlab2
+                                        PKGBIN=$GITLABBINARYCUSTOM
+                                    else
+                                        if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM2" ]; then
+                                            PKGDIR=Gitlab3
+                                            PKGBIN=$GITLABBINARYCUSTOM2
+                                        else
+                                            if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM3" ]; then
+                                                PKGDIR=Gitlab4
+                                                PKGBIN=$GITLABBINARYCUSTOM3
+                                            else
+                                                if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM4" ]; then
+                                                    PKGDIR=Gitlab5
+                                                    PKGBIN=$GITLABBINARYCUSTOM4
+                                                else
+                                                    if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM5" ]; then
+                                                        PKGDIR=Gitlab6
+                                                        PKGBIN=$GITLABBINARYCUSTOM5
+                                                    else
+                                                        if [ "$SOURCEPKGDIR" == "AURSOURCE" ]; then
+                                                            PKGDIR=AUR
+                                                            PKGBIN=$AURBINARY
+                                                        fi
+                                                    fi
+                                                fi
+                                            fi
+                                        fi
+                                    fi
+                                fi
+                            fi
+                        fi
+                    fi
+                fi
+            fi
+        fi
+        echo ""$DIR"/packages/$PKGDIR/"$p"" | tee "$DIR"/reponames/.rm.txt &>/dev/null
+        location=$(cat "$DIR"/reponames/.rm.txt) #Source package folder to remove
+
+        if [ "$dryrun" == "1" ]; then
+            if [ -e "$location" ]; then # If file exists (source file folder)
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Source:\e[0m \e[1m"\"$location\""\e[0m"
+                echo -e "\e[1m\e[34m  -> Removing Source Folder ...\e[0m"
+                echo "Dry Run"
+            else
+                echo " ⇒ No Package Source Files Found"
+                echo "Dry Run"
+            fi
+        else
+            if [ -e "$location" ]; then # If file exists (source file folder)
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Source:\e[0m \e[1m"\"$location\""\e[0m"
+                echo -e "\e[1m\e[34m  -> Removing Source Folder ...\e[0m"
+                sourcelocation=1
+            else
+                echo " ⇒ No Package Source Files Found"
+            fi
+        fi
+
+        # Find the Filename
+        #cd ""$DIR"/packages/$PKGDIR/"$p""
+        if [ -e "$location" ]; then # If file exists (source file folder)
+            cd $location
+            #ls
+            filename1=$(cat $(pwd)/PKGBUILD | grep 'pkgbase=' | cut -c 9-)
+            filename2=$(cat $(pwd)/PKGBUILD | grep 'pkgname=' | cut -c 9-)
+            if [ -n "$filename1" ]; then
+                filename=$filename1
+                find "$DIR"/"$PKGBIN" -name "*$filename*.pkg.*" >"$DIR"/reponames/.rmbin.txt
+                locationbin=$(cat "$DIR"/reponames/.rmbin.txt)
+                #echo "FILENAME=pkgbase"
+            else
+                filename=$filename2
+                find "$DIR"/"$PKGBIN" -name "*$filename*.pkg.*" >"$DIR"/reponames/.rmbin.txt
+                locationbin=$(cat "$DIR"/reponames/.rmbin.txt)
+                #echo "FILENAME=pkgname"
+            fi
+        fi
+
+        # Delete Binary if exists
+        if [ "$dryrun" == "1" ]; then
+            if [ -n "$locationbin" ]; then # If file exists (binary folder)
+                #echo
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Binary:\e[0m \e[1m"\"$locationbin\""\e[0m"
+                echo -e "\e[1m\e[34m  -> Removing Binary ...\e[0m"
+                echo "Dry Run"
+
+                # Run repo-add
+                if [ "$REPOADD" == "1" ]; then
+                    #echo
+                    echo -e "\e[1m\e[32m==>\e[0m \e[1mUpdating Database ...\e[0m"
+                    echo -e "\e[1m\e[34m  -> "$DIR"/"$PKGBIN" ...\e[0m"
+                    echo "Dry Run"
+                fi
+            fi
+        else
+            if [ -n "$locationbin" ]; then # If file exists (binary folder)
+                #echo
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Binary:\e[0m \e[1m"\"$locationbin\""\e[0m"
+                echo -e "\e[1m\e[34m  -> Removing Binary ...\e[0m"
+                # Remove old database first as repo-add has no option to remove deleted binary's when updating it
+                rm -rf $DIR/$PKGBIN/*$PKGBIN* # remove database
+                locationbinn=$(echo "$locationbin")
+                rm -rf $locationbinn # remove binary
+
+                # Run repo-add
+                if [ "$rebuild" == "1" ]; then
+                    echo "rebuild" &>/dev/null
+                else
+                    if [ "$REPOADD" == "1" ]; then
+                        #echo
+                        echo -e "\e[1m\e[32m==>\e[0m \e[1mUpdating Database ...\e[0m"
+                        echo -e "\e[1m\e[34m  -> "$DIR"/$PKGBIN ...\e[0m"
+                        repo-add -n $DIR/$PKGBIN/$PKGBIN.db.tar.gz $DIR/$PKGBIN/*.pkg.* &>/dev/null
+                    fi
+                fi
+            fi
+        fi
+        # remove the source folder here - not before!
+        if [ "$sourcelocation" == "1" ]; then
+            rm -rf $location
+        fi
+        if [ "$dryrun" == "1" ]; then
+            echo -e "\e[1m\e[32m==>\e[0m \e[1mRemoving From List: "\"$p\""\e[0m"
+            echo -e "\e[1m\e[34m  -> "$DIR/reponames/$GETSELECTED" ...\e[0m"
+            echo "Dry Run"
+            echo -e "\e[7m\e[31m<DELETED>\e[0m\e[0m"
+        else
+            if [ "$rebuild" == "1" ]; then
+                echo -e "\e[1mRebuilding ...\e[0m"
+                autogitrun=1
+                sleep 3
+            else
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mRemoving From List: "\"$p\""\e[0m"
+                echo -e "\e[1m\e[34m  -> "$DIR/reponames/$GETSELECTED" ...\e[0m"
+                grep -v "$p" "$DIR"/reponames/"$GETSELECTED" >"$DIR"/reponames/.pkglist
+                mv "$DIR"/reponames/.pkglist "$DIR"/reponames/"$GETSELECTED"
+                echo -e "\e[7m\e[31m<DELETED>\e[0m\e[0m"
+            fi
+        fi
+
+    done \
+        <"$DIR"/reponames/.toremove.txt
+}
+#
+function cleanup() {
+    # Clean Up
+    rm -rf "$DIR"/reponames/.selected.txt
+    rm -rf "$DIR"/reponames/.output.txt
+    rm -rf "$DIR"/reponames/.toremove.txt
+    rm -rf "$DIR"/reponames/.rm.txt
+    rm -rf "$DIR"/reponames/.rmbin.txt
+}
+# Run fzf options
+# Flags
+while test $# -gt 0; do
+    case "$1" in
+    -h | --help)
+        echo
+        echo -e " Welcome to Autogit's Help Page!"
+        echo
+        echo -e " Autogit runs by default without flags."
+        echo -e " In order to run autogit, edit the options in"
+        echo -e " \""$DIR"/autogit.conf\""
+        echo
+        echo -e " The provided flags will run a fzf UI to manage packages."
+        echo
+        echo -e " autogit [options]:"
+        echo -e ""
+        echo -e " -d, --dryrun      - [DRY RUN]"
+        echo -e "                     Dry Run To Remove Packages - (Nothing Will Be Touched)"
+        echo -e " -b, --build       - [REBUILD PACKAGES]"
+        echo -e "                     Remove Package Source(s), Binary(s) And Rebuild The Packge(s)"
+        echo -e " -r, --remove      - [REMOVE PACKAGES]"
+        echo -e "                     Remove Package Source(s), Binary(s), Package List Entry(s),"
+        echo -e "                     Old Database Files And Run \"repo-add\" If Enabled"
+        echo -e " -h, --help        - This Help Text"
+        echo
+        exit
+        ;;
+    -d | --dryrun)
+        echo "Dry Run"
+        dryrun=1
+        pkgchooser
+        if [ "$startflag" == "1" ]; then
+            removepkgs
+        fi
+        cleanup # needs to be run as last because we need to remove files when fzf has been quit with "ESC"
+        exit    # this "exit" command is needed to prevent the UI from loading!
+        ;;
+    -b | --build)
+        rebuild=1
+        pkgchooser
+        # pkgchooser runs the whole script
+        if [ "$startflag" == "1" ]; then
+            removepkgs
+            if [ "$autogitrun" == "1" ]; then
+                # run autogit
+                cd
+                autogit
+            fi
+        fi
+        cleanup # needs to be run as last because we need to remove files when fzf has been quit with "ESC"
+        exit    # this "exit" command is needed to prevent the UI from loading!
+        ;;
+    -r | --remove)
+        pkgchooser
+        if [ "$startflag" == "1" ]; then
+            removepkgs
+        fi
+        cleanup # needs to be run as last because we need to remove files when fzf has been quit with "ESC"
+        exit    # this "exit" command is needed to prevent the UI from loading!
+        ;;
+
+    *)
+        echo -e "Wrong Option, Please run \"autogit -h\""
+        exit
+        ;;
+    esac
+done
+#
+# Start script without flags
 function modecheck() {
     if [ "$mode" == "1" ]; then
         main
