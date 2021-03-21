@@ -20,6 +20,7 @@ How to install:
 How to run:
 
 - `autogit`
+- `autogit -h`
 
 To run it automatically without a password prompt for `buildpkg`, it can be added to `sudoers` via:
 
