@@ -97,7 +97,17 @@ function maincheck() {
         if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
             echo -e "\e[2m🗹 Up-to-Date\e[0m"
         else
+            # Check if it's a Git Package before updating
+            gitversionfile=.gitversioncheck
+            gitversioncheck="$(LANG=C git pull origin | tee "$gitversionfile")"
+            if [[ "$(cat "$gitversionfile")" == "Already up to date." ]]; then # May needs a better indicator, but it seems to work for now
+                # Already up to date.
+                rm -rf "$gitversionfile" &>/dev/null
+                echo -e "\e[2m🗹 Up-to-Date [Git Version]\e[0m"
+                return 1
+            fi
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
+            rm -rf "$gitversionfile" &>/dev/null
             git fetch origin &>/dev/null
             git checkout origin/$BRANCH &>/dev/null
             git reset --hard origin/$BRANCH # reset files to how they were before
@@ -148,6 +158,21 @@ function maincheck() {
                                 echo -e "$FAILEDBUILDMSG"
                                 rm -rf $folder/PKGBUILD
                                 failedbuild=1
+                            fi
+                        else
+                            if [ "$var" == "4" ]; then
+                                ls
+                                folder="$(printf '%q\n' "${PWD##*/}")"
+                                cd ..
+                                if sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
+                                    mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                                    setrepoadd=1
+                                else
+                                    echo -e "$FAILEDBUILDMSG"
+                                    rm -rf $folder/PKGBUILD
+                                    failedbuild=1
+                                fi
                             fi
                         fi
                     fi
@@ -207,6 +232,18 @@ function maincheck() {
                             echo -e "$FAILEDBUILDMSG"
                             rm -rf $folder/PKGBUILD
                             failedbuild=1
+                        fi
+                    else
+                        if [ "$var" == "4" ]; then
+                            if cd .. && sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
+                                mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                                setrepoadd=1
+                            else
+                                echo -e "$FAILEDBUILDMSG"
+                                rm -rf $folder/PKGBUILD
+                                failedbuild=1
+                            fi
                         fi
                     fi
                 fi
