@@ -98,13 +98,17 @@ function maincheck() {
             echo -e "\e[2m🗹 Up-to-Date\e[0m"
         else
             # Check if it's a Git Package before updating
-            gitversionfile=.gitversioncheck
-            gitversioncheck="$(LANG=C git pull origin | tee "$gitversionfile")"
-            if [[ "$(cat "$gitversionfile")" == "Already up to date." ]]; then # May needs a better indicator, but it seems to work for now
-                # Already up to date.
-                rm -rf "$gitversionfile" &>/dev/null
-                echo -e "\e[2m🗹 Up-to-Date [Git Version]\e[0m"
-                return 1
+            if [ -e ".SRCINFO" ]; then # If file exists
+                gitversionfile=.gitversioncheck
+                gitversioncheck="$(LANG=C git pull origin | tee "$gitversionfile")"
+                if [[ -n "$gitversioncheck" ]]; then
+                    if [[ "$(cat "$gitversionfile")" == "Already up to date." ]]; then
+                        # Already up to date.
+                        rm -rf "$gitversionfile" &>/dev/null
+                        echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
+                        return 1
+                    fi
+                fi
             fi
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
             rm -rf "$gitversionfile" &>/dev/null
