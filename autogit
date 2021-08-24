@@ -98,20 +98,26 @@ function maincheck() {
             echo -e "\e[2m🗹 Up-to-Date\e[0m"
         else
             # Check if it's a Git Package before updating
-            if [ -e ".SRCINFO" ]; then # If file exists
-                gitversionfile=.gitversioncheck
-                gitversioncheck="$(LANG=C git pull origin | tee "$gitversionfile")"
-                if [[ -n "$gitversioncheck" ]]; then
-                    if [[ "$(cat "$gitversionfile")" == "Already up to date." ]]; then
-                        # Already up to date.
-                        rm -rf "$gitversionfile" &>/dev/null
-                        echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
-                        return 1
+            gitfile=.gitcheck
+            gitcheck="$(echo "$p" | tee "$gitfile")"
+            if [[ -n "$gitcheck" ]]; then
+                if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches
+                    gitversionfile=.gitversioncheck
+                    gitversioncheck="$(LANG=C git pull origin | tee "$gitversionfile")"
+                    if [[ -n "$gitversioncheck" ]]; then
+                        if [[ "$(cat "$gitversionfile")" == "Already up to date." ]]; then
+                            # Already up to date.
+                            rm -rf "$gitversionfile" &>/dev/null
+                            rm -rf "$gitfile" &>/dev/null
+                            echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
+                            return 1
+                        fi
                     fi
                 fi
             fi
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
             rm -rf "$gitversionfile" &>/dev/null
+            rm -rf "$gitfile" &>/dev/null
             git fetch origin &>/dev/null
             git checkout origin/$BRANCH &>/dev/null
             git reset --hard origin/$BRANCH # reset files to how they were before
