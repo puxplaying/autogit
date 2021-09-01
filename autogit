@@ -101,22 +101,38 @@ function maincheck() {
             gitfile=.gitcheck
             gitcheck="$(echo "$p" | tee "$gitfile")"
             if [[ -n "$gitcheck" ]]; then
-                if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches
-                    gitversionfile=.gitversioncheck
-                    gitversioncheck="$(LANG=C git pull origin | tee "$gitversionfile")"
-                    if [[ -n "$gitversioncheck" ]]; then
-                        if [[ "$(cat "$gitversionfile")" == "Already up to date." ]]; then
-                            # Already up to date.
-                            rm -rf "$gitversionfile" &>/dev/null
+                if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
+                    gitpkgname="$(cat PKGBUILD | grep 'source=' | awk -F"/" '{print $NF}' | cut -f1 -d".")"
+                    cd "$gitpkgname"
+
+                    # Check if a gitlog has been created
+                    if [ -f ".gitversioncheck" ]; then # If file exists
+                        gitversionfile1=.gitversioncheck1
+                        gitversioncheck1="$(git show | head -1 | tee "$gitversionfile1")"
+                        if [[ -n "$gitversioncheck1" ]]; then
+                            if [[ "$(cat "$gitversionfile1")" == "$(cat ".gitversioncheck")" ]]; then
+                                cd ..
+                                rm -rf "$gitfile" &>/dev/null
+                                echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
+                                return 1
+                            fi
+                        fi
+                    else
+                        # Create a gitlog to check for updates
+                        gitversionfile=.gitversioncheck
+                        gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
+                        # Generate a gitcheck file for a update reference
+                        if [[ -n "$gitversioncheck" ]]; then
+                            cd ..
                             rm -rf "$gitfile" &>/dev/null
                             echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
                             return 1
                         fi
                     fi
+                    cd ..
                 fi
             fi
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
-            rm -rf "$gitversionfile" &>/dev/null
             rm -rf "$gitfile" &>/dev/null
             git fetch origin &>/dev/null
             git checkout origin/$BRANCH &>/dev/null
