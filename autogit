@@ -225,6 +225,7 @@ function maincheck() {
                     return 1
                 fi
             fi
+            rm -rf "$gitfile" &>/dev/null
         fi
     else
         echo "Package does not exist local, downloading ..."
@@ -316,6 +317,7 @@ function maincheck() {
                     return 1
                 fi
             fi
+            rm -rf "$gitfile" &>/dev/null
         fi
     fi
 }
