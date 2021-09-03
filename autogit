@@ -205,6 +205,27 @@ function maincheck() {
                 fi
             fi
         fi
+        # Check if it's a Git Package to create a log for updating
+        cd "$DIR/packages/$GITDIR/$p"
+        gitfile=.gitcheck
+        gitcheck="$(echo "$p" | tee "$gitfile")"
+        if [[ -n "$gitcheck" ]]; then
+            if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
+                gitpkgname="$(cat PKGBUILD | grep 'source=' | awk -F"/" '{print $NF}' | cut -f1 -d".")"
+                cd "$gitpkgname"
+
+                # Create a gitlog to check for updates
+                gitversionfile=.gitversioncheck
+                gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
+                # Generate a gitcheck file for a update reference
+                if [[ -n "$gitversioncheck" ]]; then
+                    cd ..
+                    rm -rf "$gitfile" &>/dev/null
+                    echo -e "\e[2m[Git-Version Updated]\e[0m"
+                    return 1
+                fi
+            fi
+        fi
     else
         echo "Package does not exist local, downloading ..."
         mkdir -p "$DIR/packages/$GITDIR/$p" && cd "$DIR/packages/$GITDIR/$p"
@@ -272,6 +293,27 @@ function maincheck() {
                             fi
                         fi
                     fi
+                fi
+            fi
+        fi
+        # Check if it's a Git Package to create a log for updating
+        cd "$DIR/packages/$GITDIR/$p"
+        gitfile=.gitcheck
+        gitcheck="$(echo "$p" | tee "$gitfile")"
+        if [[ -n "$gitcheck" ]]; then
+            if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
+                gitpkgname="$(cat PKGBUILD | grep 'source=' | awk -F"/" '{print $NF}' | cut -f1 -d".")"
+                cd "$gitpkgname"
+
+                # Create a gitlog to check for updates
+                gitversionfile=.gitversioncheck
+                gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
+                # Generate a gitcheck file for a update reference
+                if [[ -n "$gitversioncheck" ]]; then
+                    cd ..
+                    rm -rf "$gitfile" &>/dev/null
+                    echo -e "\e[2m[Git-Version]\e[0m"
+                    return 1
                 fi
             fi
         fi
