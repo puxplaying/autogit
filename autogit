@@ -107,6 +107,7 @@ function maincheck() {
 
                     # Check if a gitlog has been created
                     if [ -f ".gitversioncheck" ]; then # If file exists
+                        git fetch origin &>/dev/null
                         gitversionfile1=.gitversioncheck1
                         gitversioncheck1="$(git show | head -1 | tee "$gitversionfile1")"
                         if [[ -n "$gitversioncheck1" ]]; then
