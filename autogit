@@ -33,63 +33,29 @@ GITLABMSGCUST5="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM5\e[0m\e[0m"
 AURMSG="\e[1mAUR repo updated - \e[7m$AURBINARY\e[0m\e[0m"
 FAILEDBUILDMSG="\e[31mPackage build failed, removing ...\e[0m"
 #
-# Pingtest
-function pingtest() {
-    if ping -c$count -W1 $Server &>/dev/null; then
-        #echo "$Server is up!"
-        echo &>/dev/null
-    else
-        echo "$Server no connection ..retrying!"
-        if ping -c$count -W1 $Server &>/dev/null; then
-            #echo "$Server is up!"
-            echo &>/dev/null
-        else
-            echo "$Server no connection ..retrying!"
-            if ping -c$count -W1 $Server &>/dev/null; then
-                #echo "$Server is up!"
-                echo &>/dev/null
-            else
-                echo "$Server no connection ..exit!"
-                exit
-            fi
-        fi
-    fi
-}
-# Check if server is online
-function servercheck() {
-    if [ -z ${Server1+x} ]; then
-        #echo "var is unset"
-        echo &>/dev/null
-    else
-        Server=$Server1
-        pingtest
-    fi
-
-    if [ -z ${Server2+x} ]; then
-        #echo "var is unset"
-        echo &>/dev/null
-    else
-        Server=$Server2
-        pingtest
-    fi
-
-    if [ -z ${Server3+x} ]; then
-        #echo "var is unset"
-        echo &>/dev/null
-    else
-        Server=$Server3
-        pingtest
-    fi
-}
-#
 # Main functionality
 function maincheck() {
     if [ -e "$DIR/packages/$GITDIR/$p" ]; then # If file exists
         cd "$DIR/packages/$GITDIR/$p"          # go to current package directory to compare it
         localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
         localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
+        CURL=$(curl -f -s "$GITHUBURL")
+        GETPKGVER=$(echo "$CURL" | grep 'pkgver=' | cut -c 8-)
+        GETPKGREL=$(echo "$CURL" | grep 'pkgrel=' | cut -c 8-)
+
+        # Check for a internet connection
+        if ! [[ -n "$CURL" ]]; then # Check if CURL fails
+            echo "No online connection ..retrying"
+            sleep 2
+            if ! [[ -n "$CURL" ]]; then # Check if CURL fails
+                echo "No online connection ..retrying"
+                sleep 2
+                if ! [[ -n "$CURL" ]]; then # Check if CURL fails
+                    echo "No online connection ..exit!"
+                    exit 1
+                fi
+            fi
+        fi
 
         echo -e "\e[1m⚿ local  version: $localfile-$localfilepkgrel\e[0m"
         echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
@@ -666,7 +632,6 @@ function manualsync() {
     clear
 
     time {
-        servercheck
         if [ "$SETGITHUBREPO" == "1" ]; then
             githubversion
             echo ""
@@ -840,7 +805,6 @@ function main() {
         clear
 
         time {
-            servercheck
             if [ "$SETGITHUBREPO" == "1" ]; then
                 githubversion
                 echo ""
