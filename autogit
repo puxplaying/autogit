@@ -46,13 +46,13 @@ function maincheck() {
         SHA512ONLINE=$(sha512sum .onlinepkgbuild | cut -f 1 -d " ")
 
         # Check for a internet connection
-        if ! [[ -n "$CURL" ]] && [ -s .onlinepkgbuild ]; then # Check if CURL fails and file is not empty
+        if ! [[ -n "$CURL" ]] && [ -s .onlinepkgbuild ]; then # Check if CURL fails and file is empty
             echo "No online connection ..retrying"
             sleep 2
-            if ! [[ -n "$CURL" ]] && [ -s .onlinepkgbuild ]; then # Check if CURL fails and file is not empty
+            if ! [[ -n "$CURL" ]] && [ -s .onlinepkgbuild ]; then # Check if CURL fails and file is empty
                 echo "No online connection ..retrying"
                 sleep 2
-                if ! [[ -n "$CURL" ]] && [ -s .onlinepkgbuild ]; then # Check if CURL fails and file is not empty
+                if ! [[ -n "$CURL" ]] && [ -s .onlinepkgbuild ]; then # Check if CURL fails and file is empty
                     echo "No online connection ..exit!"
                     rm -rf .onlinepkgbuild &>/dev/null
                     exit 1
