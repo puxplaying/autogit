@@ -66,18 +66,39 @@ function maincheck() {
         # Check if it's a Git Package before updating
         gitfile=.gitcheck
         if [ -e "$gitfile" ]; then
-            if grep -E *'-git' "$gitfile" &>/dev/null; then                                                   # If result matches (Name has a -git string)
-                gitpkgname="$(cat PKGBUILD | grep 'source=' | awk -F"/" '{print $NF}' | cut -f1 -d".")"       # Try if upstream pkg name is in "source="
-                gitpkgname1="$(cat PKGBUILD | grep 'pkgname=' | cut -c 9-)"                                   # Try if upstream pkg name is in "pkgname="
-                gitpkgname2="$(cat PKGBUILD | grep 'url=' | awk -F"/" '{print $NF}' | rev | cut -c 2- | rev)" # Try if upstream pkg name is in "url="
+            if grep -E *'-git' "$gitfile" &>/dev/null; then                                              # If result matches (Name has a -git string)
+                gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
+                gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
+                gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
+                gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
                 if [ -e "$gitpkgname" ]; then
-                    cd "$gitpkgname"
-                fi
-                if [ -e "$gitpkgname" ]; then
-                    cd "$gitpkgname1"
-                fi
-                if [ -e "$gitpkgname" ]; then
-                    cd "$gitpkgname2"
+                    if [[ -n "$gitpkgname" ]]; then
+                        cd "$gitpkgname"
+                    fi
+                else
+                    if [ -e "$gitpkgname1" ]; then
+                        if [[ -n "$gitpkgname1" ]]; then
+                            cd "$gitpkgname1"
+                        fi
+                    else
+                        if [ -e "$gitpkgname2" ]; then
+                            if [[ -n "$gitpkgname2" ]]; then
+                                cd "$gitpkgname2"
+                            fi
+                        else
+                            ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching files for the first 5 letters of the "pkgname" via "ls"
+                            cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names while looping through a file.
+                                if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
+                                    # echo "Directory "$line" exists."
+                                    echo "$line" | tee .srcf &>/dev/null
+                                fi
+                            done
+                            rm -rf .gitsrc &>/dev/null
+                            GITPKGSRC="$(cat .srcf)"
+                            cd "$GITPKGSRC"
+                            rm -rf .gitsrc
+                        fi
+                    fi
                 fi
 
                 # Check if a gitlog has been created
@@ -87,7 +108,7 @@ function maincheck() {
                     gitversioncheck1="$(git show | head -1 | tee "$gitversionfile1")"
                     if [[ -n "$gitversioncheck1" ]]; then
                         if [[ "$(cat "$gitversionfile1")" == "$(cat ".gitversioncheck")" ]]; then
-                            cd ..
+                            cd "$DIR/packages/$GITDIR/$p"
                             echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
                             rm -rf .onlinepkgbuild &>/dev/null
                             return 1
@@ -99,7 +120,7 @@ function maincheck() {
                     gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
                     # Generate a gitcheck file for a update reference
                     if [[ -n "$gitversioncheck" ]]; then
-                        cd ..
+                        cd "$DIR/packages/$GITDIR/$p"
                         echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
                         rm -rf .onlinepkgbuild &>/dev/null
                         return 1
@@ -193,17 +214,39 @@ function maincheck() {
             if [ -n "$gitcheck" ]; then
                 if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
                     makepkg --nobuild
-                    gitpkgname="$(cat PKGBUILD | grep 'source=' | awk -F"/" '{print $NF}' | cut -f1 -d".")"
-                    gitpkgname1="$(cat PKGBUILD | grep 'pkgname=' | cut -c 9-)"
-                    gitpkgname2="$(cat PKGBUILD | grep 'url=' | awk -F"/" '{print $NF}' | rev | cut -c 2- | rev)"
+                    makepkg --printsrcinfo >.SRCINFO
+                    gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
+                    gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
+                    gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
+                    gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
                     if [ -e "$gitpkgname" ]; then
-                        cd "$gitpkgname"
-                    fi
-                    if [ -e "$gitpkgname" ]; then
-                        cd "$gitpkgname1"
-                    fi
-                    if [ -e "$gitpkgname" ]; then
-                        cd "$gitpkgname2"
+                        if [[ -n "$gitpkgname" ]]; then
+                            cd "$gitpkgname"
+                        fi
+                    else
+                        if [ -e "$gitpkgname1" ]; then
+                            if [[ -n "$gitpkgname1" ]]; then
+                                cd "$gitpkgname1"
+                            fi
+                        else
+                            if [ -e "$gitpkgname2" ]; then
+                                if [[ -n "$gitpkgname2" ]]; then
+                                    cd "$gitpkgname2"
+                                fi
+                            else
+                                ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching "pkgname" files via "ls"
+                                cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names in a loop.
+                                    if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
+                                        # echo "Directory "$line" exists."
+                                        echo "$line" | tee .srcf &>/dev/null
+                                    fi
+                                done
+                                rm -rf .gitsrc &>/dev/null
+                                GITPKGSRC="$(cat .srcf)"
+                                cd "$GITPKGSRC"
+                                rm -rf .gitsrc
+                            fi
+                        fi
                     fi
 
                     # Create a gitlog to check for updates
@@ -211,7 +254,7 @@ function maincheck() {
                     gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
                     # Generate a gitcheck file for a update reference
                     if [[ -n "$gitversioncheck" ]]; then
-                        cd ..
+                        cd "$DIR/packages/$GITDIR/$p"
                         echo -e "\e[2m[Git-Version Updated]\e[0m"
                         rm -rf .onlinepkgbuild &>/dev/null
                         return 1
@@ -297,17 +340,39 @@ function maincheck() {
         if [ -n "$gitcheck" ]; then
             if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
                 makepkg --nobuild
-                gitpkgname="$(cat PKGBUILD | grep 'source=' | awk -F"/" '{print $NF}' | cut -f1 -d".")"
-                gitpkgname1="$(cat PKGBUILD | grep 'pkgname=' | cut -c 9-)"
-                gitpkgname2="$(cat PKGBUILD | grep 'url=' | awk -F"/" '{print $NF}' | rev | cut -c 2- | rev)"
+                makepkg --printsrcinfo >.SRCINFO
+                gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
+                gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
+                gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
+                gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
                 if [ -e "$gitpkgname" ]; then
-                    cd "$gitpkgname"
-                fi
-                if [ -e "$gitpkgname" ]; then
-                    cd "$gitpkgname1"
-                fi
-                if [ -e "$gitpkgname" ]; then
-                    cd "$gitpkgname2"
+                    if [[ -n "$gitpkgname" ]]; then
+                        cd "$gitpkgname"
+                    fi
+                else
+                    if [ -e "$gitpkgname1" ]; then
+                        if [[ -n "$gitpkgname1" ]]; then
+                            cd "$gitpkgname1"
+                        fi
+                    else
+                        if [ -e "$gitpkgname2" ]; then
+                            if [[ -n "$gitpkgname2" ]]; then
+                                cd "$gitpkgname2"
+                            fi
+                        else
+                            ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching "pkgname" files via "ls"
+                            cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names in a loop.
+                                if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
+                                    # echo "Directory "$line" exists."
+                                    echo "$line" | tee .srcf &>/dev/null
+                                fi
+                            done
+                            rm -rf .gitsrc &>/dev/null
+                            GITPKGSRC="$(cat .srcf)"
+                            cd "$GITPKGSRC"
+                            rm -rf .gitsrc
+                        fi
+                    fi
                 fi
 
                 # Create a gitlog to check for updates
@@ -315,7 +380,7 @@ function maincheck() {
                 gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
                 # Generate a gitcheck file for a update reference
                 if [[ -n "$gitversioncheck" ]]; then
-                    cd ..
+                    cd "$DIR/packages/$GITDIR/$p"
                     echo -e "\e[2m[Git-Version]\e[0m"
                     rm -rf .onlinepkgbuild &>/dev/null
                     return 1
