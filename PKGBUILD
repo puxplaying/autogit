@@ -1,7 +1,7 @@
 # Maintainer: Georg Wagner (@puxplaying) <puxplaying@gmail.com>
 
 pkgname=autogit
-pkgver=1.7.0
+pkgver=1.7.1
 pkgrel=1
 pkgdesc="Auto build, update, install PKGBUILDS from Github, Gitlab and AUR"
 arch=('any')
@@ -12,7 +12,7 @@ makedepends=('git')
 optdepends=('manjaro-tools-pkg: Needed for Manjaro clean chroot package building'
             'manjaro-chrootbuild: Needed for Manjaro clean chroot package building')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/$pkgver.tar.gz")
-sha256sums=('3eaf5d3c436bbb6ec3cb89149a1178a011b3dfa12b38d761d6ef0f6fd07677c5')
+sha256sums=('98dd763dcd82c745e9d953de7502463ff2bce0ffcf8d72b40d6eea412d93c1c5')
 
 package () {
   cd "$pkgname-$pkgver"
