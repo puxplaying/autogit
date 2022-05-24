@@ -37,35 +37,99 @@ FAILEDBUILDMSG="\e[31mPackage build failed, removing ...\e[0m"
 function maincheck() {
     if [ -e "$DIR/packages/$GITDIR/$p" ]; then # If file exists
         cd "$DIR/packages/$GITDIR/$p"          # go to current package directory to compare it
-        localfile=$(cat PKGBUILD | grep 'pkgver=' | cut -c 8-)
-        localfilepkgrel=$(cat PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-        CURL=$(curl -f -s "$GITHUBURL" | tee .onlinepkgbuild)
-        GETPKGVER=$(echo "$CURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(echo "$CURL" | grep 'pkgrel=' | cut -c 8-)
-        SHA512LOCAL=$(sha512sum PKGBUILD | cut -f 1 -d " ")
-        SHA512ONLINE=$(sha512sum .onlinepkgbuild | cut -f 1 -d " ")
+
+        ONLINEPKGBUILD=".onlinepkgbuild"
+        CURL=$(curl -f -s "$GITHUBURL" | tee "$ONLINEPKGBUILD")
 
         # Check for a internet connection
-        if ! [[ -n "$CURL" ]] && [ -s .onlinepkgbuild ]; then # Check if CURL fails and file is empty
+        if ! [[ -n "$CURL" ]] && [ -s "$ONLINEPKGBUILD" ]; then # Check if CURL fails and file is empty
             echo "No online connection ..retrying"
             sleep 2
-            if ! [[ -n "$CURL" ]] && [ -s .onlinepkgbuild ]; then # Check if CURL fails and file is empty
+            if ! [[ -n "$CURL" ]] && [ -s "$ONLINEPKGBUILD" ]; then # Check if CURL fails and file is empty
                 echo "No online connection ..retrying"
                 sleep 2
-                if ! [[ -n "$CURL" ]] && [ -s .onlinepkgbuild ]; then # Check if CURL fails and file is empty
+                if ! [[ -n "$CURL" ]] && [ -s "$ONLINEPKGBUILD" ]; then # Check if CURL fails and file is empty
                     echo "No online connection ..exit!"
-                    rm -rf .onlinepkgbuild &>/dev/null
+                    rm -rf "$ONLINEPKGBUILD" &>/dev/null
                     exit 1
                 fi
             fi
         fi
 
-        echo -e "\e[1m⚿ local  version: $localfile-$localfilepkgrel\e[0m"
-        echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
+        # Update check method 3 ".SRCINFO"
+        if [ "$UPDCHECK" == "3" ]; then
+            ONLINESRCDIR="onlinesrcinfo"
+            # Local PKGBUILD ".SRCINFO"
+            if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
+
+                if [ -e ".SRCINFO" ]; then # If file exists ".SRCINFO"
+                    echo ".SRCINFO exists" &>/dev/null
+                else
+                    makepkg --printsrcinfo >.SRCINFO # print .SRCINFO file for a reliable local pkg update reference
+                    sleep 1
+                fi
+
+                # Online PKGBUILD ".SRCINFO"
+                if [ -e "$ONLINESRCDIR" ]; then # If file exists
+                    cd "$ONLINESRCDIR/original"
+                    git fetch origin &>/dev/null
+                    git checkout origin/$BRANCH &>/dev/null
+                    git reset --hard origin/$BRANCH &>/dev/null                                 # reset files to how they were before
+                    git clean -f -d &>/dev/null                                                 # clear any other changes you've done
+                    makepkg --printsrcinfo >"$DIR/packages/$GITDIR/$p"/"$ONLINESRCDIR"/.SRCINFO # print .SRCINFO file for a reliable online pkg update reference
+                    cd "$DIR/packages/$GITDIR/$p"                                               # go to current package directory
+                else
+                    if mkdir -p "$ONLINESRCDIR" && cd "$ONLINESRCDIR"; then
+                        git clone --single-branch --branch "$BRANCH" "$GITHUBCLONEURL""$p".git &>/dev/null
+                        folder="$(ls)"
+                        mv $folder original &>/dev/null
+                        cd original
+                        makepkg --printsrcinfo >"$DIR/packages/$GITDIR/$p"/"$ONLINESRCDIR"/.SRCINFO # print .SRCINFO file for a reliable online pkg update reference
+                        cd "$DIR/packages/$GITDIR/$p"                                               # go to current package directory
+                    fi
+                fi
+
+                LOCALPKGVER=$(cat .SRCINFO | grep 'pkgver =' | cut -c 11-)
+                LOCALPKGREL=$(cat .SRCINFO | grep 'pkgrel =' | cut -c 11-)
+                GETPKGVER=$(cat "$ONLINESRCDIR"/.SRCINFO | grep 'pkgver =' | cut -c 11-)
+                GETPKGREL=$(cat "$ONLINESRCDIR"/.SRCINFO | grep 'pkgrel =' | cut -c 11-)
+
+                echo -e "\e[1m⚿ local  version: $LOCALPKGVER-$LOCALPKGREL\e[0m"
+                echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
+            fi
+        fi
+
+        # Update check method 2 "sha512sums"
+        if [ "$UPDCHECK" == "2" ]; then
+            if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
+                LOCALPKGVER=$(cat PKGBUILD | grep 'pkgver=' | cut -c 8-)
+                LOCALPKGREL=$(cat PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+                GETPKGVER=$(echo "$CURL" | grep 'pkgver=' | cut -c 8-)
+                GETPKGREL=$(echo "$CURL" | grep 'pkgrel=' | cut -c 8-)
+                SHA512LOCAL=$(sha512sum PKGBUILD | cut -f 1 -d " ")
+                SHA512ONLINE=$(sha512sum "$ONLINEPKGBUILD" | cut -f 1 -d " ")
+
+                echo -e "\e[1m⚿ local  version: $LOCALPKGVER-$LOCALPKGREL\e[0m"
+                echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
+            fi
+        fi
+
+        # Update check method 1 "pkgver" "pkgrel"
+        if [ "$UPDCHECK" == "1" ]; then
+            if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
+                LOCALPKGVER=$(cat PKGBUILD | grep 'pkgver=' | cut -c 8-)
+                LOCALPKGREL=$(cat PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+                GETPKGVER=$(echo "$CURL" | grep 'pkgver=' | cut -c 8-)
+                GETPKGREL=$(echo "$CURL" | grep 'pkgrel=' | cut -c 8-)
+
+                echo -e "\e[1m⚿ local  version: $LOCALPKGVER-$LOCALPKGREL\e[0m"
+                echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
+            fi
+        fi
 
         # Check if it's a Git Package before updating
         gitfile=.gitcheck
-        if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
+        if [ -e "PKGBUILD" ]; then # If file exists
             if [ -e "$gitfile" ]; then
                 if grep -E *'-git' "$gitfile" &>/dev/null; then                                              # If result matches (Name has a -git string)
                     gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
@@ -132,12 +196,16 @@ function maincheck() {
             fi
         fi
 
-        # if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
-        if [ -e "PKGBUILD" ] && [ "$SHA512LOCAL" == "$SHA512ONLINE" ]; then # If PKGBUILD exists and SHA512 sums match
-            echo -e "\e[2m🗹 Up-to-Date\e[0m"
-            rm -rf .onlinepkgbuild &>/dev/null
+        if [ "$UPDCHECK" == "3" ] && [ -e "PKGBUILD" ] && [ "$GETPKGVER" == "$LOCALPKGVER" ] && [ "$GETPKGREL" == "$LOCALPKGREL" ]; then # If PKGBUILD exists and "pkgver" and "pkgrel" match; then
+                echo -e "\e[2m🗹 Up-to-Date\e[0m"
+                rm -rf "$ONLINEPKGBUILD" &>/dev/null
+        elif [ "$UPDCHECK" == "2" ] && [ -e "PKGBUILD" ] && [ "$SHA512LOCAL" == "$SHA512ONLINE" ]; then # If PKGBUILD exists and SHA512 sums match; then
+                echo -e "\e[2m🗹 Up-to-Date\e[0m"
+                rm -rf "$ONLINEPKGBUILD" &>/dev/null
+        elif [ "$UPDCHECK" == "1" ] && [ -e "PKGBUILD" ] && [ "$GETPKGVER" == "$LOCALPKGVER" ] && [ "$GETPKGREL" == "$LOCALPKGREL" ]; then # If PKGBUILD exists and "pkgver" and "pkgrel" match; then
+                echo -e "\e[2m🗹 Up-to-Date\e[0m"
+                rm -rf "$ONLINEPKGBUILD" &>/dev/null
         else
-
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
             git fetch origin &>/dev/null
             git checkout origin/$BRANCH &>/dev/null
