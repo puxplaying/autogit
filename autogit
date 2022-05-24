@@ -66,7 +66,6 @@ function maincheck() {
                     echo ".SRCINFO exists" &>/dev/null
                 else
                     makepkg --printsrcinfo >.SRCINFO # print .SRCINFO file for a reliable local pkg update reference
-                    sleep 1
                 fi
 
                 # Online PKGBUILD ".SRCINFO"
