@@ -33,69 +33,163 @@ GITLABMSGCUST5="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM5\e[0m\e[0m"
 AURMSG="\e[1mAUR repo updated - \e[7m$AURBINARY\e[0m\e[0m"
 FAILEDBUILDMSG="\e[31mPackage build failed, removing ...\e[0m"
 #
-# Pingtest
-function pingtest() {
-    if ping -c$count -W1 $Server &>/dev/null; then
-        #echo "$Server is up!"
-        echo &>/dev/null
-    else
-        echo "$Server no connection ..retrying!"
-        if ping -c$count -W1 $Server &>/dev/null; then
-            #echo "$Server is up!"
-            echo &>/dev/null
-        else
-            echo "$Server no connection ..retrying!"
-            if ping -c$count -W1 $Server &>/dev/null; then
-                #echo "$Server is up!"
-                echo &>/dev/null
-            else
-                echo "$Server no connection ..exit!"
-                exit
-            fi
-        fi
-    fi
-}
-# Check if server is online
-function servercheck() {
-    if [ -z ${Server1+x} ]; then
-        #echo "var is unset"
-        echo &>/dev/null
-    else
-        Server=$Server1
-        pingtest
-    fi
-
-    if [ -z ${Server2+x} ]; then
-        #echo "var is unset"
-        echo &>/dev/null
-    else
-        Server=$Server2
-        pingtest
-    fi
-
-    if [ -z ${Server3+x} ]; then
-        #echo "var is unset"
-        echo &>/dev/null
-    else
-        Server=$Server3
-        pingtest
-    fi
-}
-#
 # Main functionality
 function maincheck() {
     if [ -e "$DIR/packages/$GITDIR/$p" ]; then # If file exists
         cd "$DIR/packages/$GITDIR/$p"          # go to current package directory to compare it
-        localfile=$(cat $(pwd)/PKGBUILD | grep 'pkgver=' | cut -c 8-)
-        localfilepkgrel=$(cat $(pwd)/PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-        GETPKGVER=$(curl --silent "$GITHUBURL" | grep 'pkgver=' | cut -c 8-)
-        GETPKGREL=$(curl --silent "$GITHUBURL" | grep 'pkgrel=' | cut -c 8-)
 
-        echo -e "\e[1m⚿ local  version: $localfile-$localfilepkgrel\e[0m"
-        echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
+        ONLINEPKGBUILD=".onlinepkgbuild"
+        CURL=$(curl -f -s "$GITHUBURL" | tee "$ONLINEPKGBUILD")
 
-        if [ "$GETPKGVER" == "$localfile" ] && [ "$GETPKGREL" == "$localfilepkgrel" ]; then
+        # Check for a internet connection
+        if ! [[ -n "$CURL" ]] && [ -s "$ONLINEPKGBUILD" ]; then # Check if CURL fails and file is empty
+            echo "No online connection ..retrying"
+            sleep 2
+            if ! [[ -n "$CURL" ]] && [ -s "$ONLINEPKGBUILD" ]; then # Check if CURL fails and file is empty
+                echo "No online connection ..retrying"
+                sleep 2
+                if ! [[ -n "$CURL" ]] && [ -s "$ONLINEPKGBUILD" ]; then # Check if CURL fails and file is empty
+                    echo "No online connection ..exit!"
+                    rm -rf "$ONLINEPKGBUILD" &>/dev/null
+                    exit 1
+                fi
+            fi
+        fi
+
+        # Update check method 1: compare "pkgver" + "pkgrel" & "sha512sum of PKGBUILD's via curl"
+        if [ "$UPDCHECK" == "1" ]; then
+            if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
+                LOCALPKGVER=$(cat PKGBUILD | grep 'pkgver=' | cut -c 8-)
+                LOCALPKGREL=$(cat PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+                GETPKGVER=$(echo "$CURL" | grep 'pkgver=' | cut -c 8-)
+                GETPKGREL=$(echo "$CURL" | grep 'pkgrel=' | cut -c 8-)
+                SHA512LOCAL=$(sha512sum PKGBUILD | cut -f 1 -d " ")
+                SHA512ONLINE=$(sha512sum "$ONLINEPKGBUILD" | cut -f 1 -d " ")
+
+                echo -e "\e[1m⚿ local  version: $LOCALPKGVER-$LOCALPKGREL\e[0m"
+                echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
+            fi
+        fi
+
+        # Update check method 2: compare "pkgver" + "pkgrel" of ".SRCINFO's" & "sha512sum" of PKGBUILD's via "git" & "makepkg"
+        if [ "$UPDCHECK" == "2" ]; then
+            ONLINESRCDIR="onlinesrcinfo"
+            # Local PKGBUILD ".SRCINFO"
+            if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
+
+                if [ -e ".SRCINFO" ]; then # If file exists ".SRCINFO"
+                    echo ".SRCINFO exists" &>/dev/null
+                else
+                    makepkg --printsrcinfo >.SRCINFO # print .SRCINFO file for a reliable local pkg update reference
+                fi
+
+                # Online PKGBUILD ".SRCINFO"
+                if [ -e "$ONLINESRCDIR" ]; then # If file exists
+                    cd "$ONLINESRCDIR/original"
+                    git fetch origin &>/dev/null
+                    git checkout origin/$BRANCH &>/dev/null
+                    git reset --hard origin/$BRANCH &>/dev/null                                 # reset files to how they were before
+                    git clean -f -d &>/dev/null                                                 # clear any other changes you've done
+                    makepkg --printsrcinfo >"$DIR/packages/$GITDIR/$p"/"$ONLINESRCDIR"/.SRCINFO # print .SRCINFO file for a reliable online pkg update reference
+                    cd "$DIR/packages/$GITDIR/$p"                                               # go to current package directory
+                else
+                    if mkdir -p "$ONLINESRCDIR" && cd "$ONLINESRCDIR"; then
+                        git clone --single-branch --branch "$BRANCH" "$GITHUBCLONEURL""$p".git &>/dev/null
+                        folder="$(ls)"
+                        mv $folder original &>/dev/null
+                        cd original
+                        makepkg --printsrcinfo >"$DIR/packages/$GITDIR/$p"/"$ONLINESRCDIR"/.SRCINFO # print .SRCINFO file for a reliable online pkg update reference
+                        cd "$DIR/packages/$GITDIR/$p"                                               # go to current package directory
+                    fi
+                fi
+
+                LOCALPKGVER=$(cat .SRCINFO | grep 'pkgver =' | cut -c 11-)
+                LOCALPKGREL=$(cat .SRCINFO | grep 'pkgrel =' | cut -c 11-)
+                GETPKGVER=$(cat "$ONLINESRCDIR"/.SRCINFO | grep 'pkgver =' | cut -c 11-)
+                GETPKGREL=$(cat "$ONLINESRCDIR"/.SRCINFO | grep 'pkgrel =' | cut -c 11-)
+                SHA512LOCAL=$(sha512sum PKGBUILD | cut -f 1 -d " ")
+                SHA512ONLINE=$(sha512sum "$ONLINESRCDIR/original/PKGBUILD" | cut -f 1 -d " ")
+
+                echo -e "\e[1m⚿ local  version: $LOCALPKGVER-$LOCALPKGREL\e[0m"
+                echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
+            fi
+        fi
+
+        # Check if it's a Git Package before updating
+        gitfile=.gitcheck
+        if [ -e "PKGBUILD" ]; then # If file exists
+            if [ -e "$gitfile" ]; then
+                if grep -E *'-git' "$gitfile" &>/dev/null; then                                              # If result matches (Name has a -git string)
+                    gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
+                    gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
+                    gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
+                    gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
+                    if [ -e "$gitpkgname" ]; then
+                        if [[ -n "$gitpkgname" ]]; then
+                            cd "$gitpkgname"
+                        fi
+                    else
+                        if [ -e "$gitpkgname1" ]; then
+                            if [[ -n "$gitpkgname1" ]]; then
+                                cd "$gitpkgname1"
+                            fi
+                        else
+                            if [ -e "$gitpkgname2" ]; then
+                                if [[ -n "$gitpkgname2" ]]; then
+                                    cd "$gitpkgname2"
+                                fi
+                            else
+                                ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching files for the first 5 letters of the "pkgname" via "ls"
+                                cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names while looping through a file.
+                                    if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
+                                        # echo "Directory "$line" exists."
+                                        echo "$line" | tee .srcf &>/dev/null
+                                    fi
+                                done
+                                rm -rf .gitsrc &>/dev/null
+                                GITPKGSRC="$(cat .srcf)"
+                                cd "$GITPKGSRC"
+                                rm -rf .gitsrc
+                            fi
+                        fi
+                    fi
+
+                    # Check if a gitlog has been created
+                    if [ -f ".gitversioncheck" ]; then # If file exists
+                        git fetch origin &>/dev/null
+                        gitversionfile1=.gitversioncheck1
+                        gitversioncheck1="$(git show | head -1 | tee "$gitversionfile1")"
+                        if [[ -n "$gitversioncheck1" ]]; then
+                            if [[ "$(cat "$gitversionfile1")" == "$(cat ".gitversioncheck")" ]]; then
+                                cd "$DIR/packages/$GITDIR/$p"
+                                echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
+                                rm -rf .onlinepkgbuild &>/dev/null
+                                return 1
+                            fi
+                        fi
+                    else
+                        # Create a gitlog to check for updates
+                        gitversionfile=.gitversioncheck
+                        gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
+                        # Generate a gitcheck file for a update reference
+                        if [[ -n "$gitversioncheck" ]]; then
+                            cd "$DIR/packages/$GITDIR/$p"
+                            echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
+                            rm -rf .onlinepkgbuild &>/dev/null
+                            return 1
+                        fi
+                    fi
+                    cd ..
+                fi
+            fi
+        fi
+
+        if [ "$UPDCHECK" == "2" ] && [ -e "PKGBUILD" ] && [ "$GETPKGVER" == "$LOCALPKGVER" ] && [ "$GETPKGREL" == "$LOCALPKGREL" ] && [ "$SHA512LOCAL" == "$SHA512ONLINE" ]; then # If PKGBUILD exists, "pkgver" + "pkgrel" and SHA-512 sums match
             echo -e "\e[2m🗹 Up-to-Date\e[0m"
+            rm -rf "$ONLINEPKGBUILD" &>/dev/null
+        elif [ "$UPDCHECK" == "1" ] && [ -e "PKGBUILD" ] && [ "$GETPKGVER" == "$LOCALPKGVER" ] && [ "$GETPKGREL" == "$LOCALPKGREL" ] && [ "$SHA512LOCAL" == "$SHA512ONLINE" ]; then # If PKGBUILD exists, "pkgver" + "pkgrel" and SHA-512 sums match
+            echo -e "\e[2m🗹 Up-to-Date\e[0m"
+            rm -rf "$ONLINEPKGBUILD" &>/dev/null
         else
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
             git fetch origin &>/dev/null
@@ -149,9 +243,79 @@ function maincheck() {
                                 rm -rf $folder/PKGBUILD
                                 failedbuild=1
                             fi
+                        else
+                            if [ "$var" == "4" ]; then
+                                ls
+                                folder="$(printf '%q\n' "${PWD##*/}")"
+                                cd ..
+                                if sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
+                                    mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                                    setrepoadd=1
+                                else
+                                    echo -e "$FAILEDBUILDMSG"
+                                    rm -rf $folder/PKGBUILD
+                                    failedbuild=1
+                                fi
+                            fi
                         fi
                     fi
                 fi
+            fi
+            # Check if it's a Git Package to create a log for updating
+            cd "$DIR/packages/$GITDIR/$p"
+            gitfile=.gitcheck
+            gitcheck="$(echo "$p" | tee "$gitfile")"
+            if [ -n "$gitcheck" ]; then
+                if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
+                    makepkg --nobuild
+                    makepkg --printsrcinfo >.SRCINFO
+                    gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
+                    gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
+                    gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
+                    gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
+                    if [ -e "$gitpkgname" ]; then
+                        if [[ -n "$gitpkgname" ]]; then
+                            cd "$gitpkgname"
+                        fi
+                    else
+                        if [ -e "$gitpkgname1" ]; then
+                            if [[ -n "$gitpkgname1" ]]; then
+                                cd "$gitpkgname1"
+                            fi
+                        else
+                            if [ -e "$gitpkgname2" ]; then
+                                if [[ -n "$gitpkgname2" ]]; then
+                                    cd "$gitpkgname2"
+                                fi
+                            else
+                                ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching "pkgname" files via "ls"
+                                cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names in a loop.
+                                    if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
+                                        # echo "Directory "$line" exists."
+                                        echo "$line" | tee .srcf &>/dev/null
+                                    fi
+                                done
+                                rm -rf .gitsrc &>/dev/null
+                                GITPKGSRC="$(cat .srcf)"
+                                cd "$GITPKGSRC"
+                                rm -rf .gitsrc
+                            fi
+                        fi
+                    fi
+
+                    # Create a gitlog to check for updates
+                    gitversionfile=.gitversioncheck
+                    gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
+                    # Generate a gitcheck file for a update reference
+                    if [[ -n "$gitversioncheck" ]]; then
+                        cd "$DIR/packages/$GITDIR/$p"
+                        echo -e "\e[2m[Git-Version Updated]\e[0m"
+                        rm -rf .onlinepkgbuild &>/dev/null
+                        return 1
+                    fi
+                fi
+                rm -rf "$gitfile" &>/dev/null
             fi
         fi
     else
@@ -208,9 +372,76 @@ function maincheck() {
                             rm -rf $folder/PKGBUILD
                             failedbuild=1
                         fi
+                    else
+                        if [ "$var" == "4" ]; then
+                            if cd .. && sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
+                                mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                                setrepoadd=1
+                            else
+                                echo -e "$FAILEDBUILDMSG"
+                                rm -rf $folder/PKGBUILD
+                                failedbuild=1
+                            fi
+                        fi
                     fi
                 fi
             fi
+        fi
+        # Check if it's a Git Package to create a log for updating
+        cd "$DIR/packages/$GITDIR/$p"
+        gitfile=.gitcheck
+        gitcheck="$(echo "$p" | tee "$gitfile")"
+        if [ -n "$gitcheck" ]; then
+            if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
+                makepkg --nobuild
+                makepkg --printsrcinfo >.SRCINFO
+                gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
+                gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
+                gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
+                gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
+                if [ -e "$gitpkgname" ]; then
+                    if [[ -n "$gitpkgname" ]]; then
+                        cd "$gitpkgname"
+                    fi
+                else
+                    if [ -e "$gitpkgname1" ]; then
+                        if [[ -n "$gitpkgname1" ]]; then
+                            cd "$gitpkgname1"
+                        fi
+                    else
+                        if [ -e "$gitpkgname2" ]; then
+                            if [[ -n "$gitpkgname2" ]]; then
+                                cd "$gitpkgname2"
+                            fi
+                        else
+                            ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching "pkgname" files via "ls"
+                            cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names in a loop.
+                                if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
+                                    # echo "Directory "$line" exists."
+                                    echo "$line" | tee .srcf &>/dev/null
+                                fi
+                            done
+                            rm -rf .gitsrc &>/dev/null
+                            GITPKGSRC="$(cat .srcf)"
+                            cd "$GITPKGSRC"
+                            rm -rf .gitsrc
+                        fi
+                    fi
+                fi
+
+                # Create a gitlog to check for updates
+                gitversionfile=.gitversioncheck
+                gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
+                # Generate a gitcheck file for a update reference
+                if [[ -n "$gitversioncheck" ]]; then
+                    cd "$DIR/packages/$GITDIR/$p"
+                    echo -e "\e[2m[Git-Version]\e[0m"
+                    rm -rf .onlinepkgbuild &>/dev/null
+                    return 1
+                fi
+            fi
+            rm -rf "$gitfile" &>/dev/null
         fi
     fi
 }
@@ -558,7 +789,6 @@ function manualsync() {
     clear
 
     time {
-        servercheck
         if [ "$SETGITHUBREPO" == "1" ]; then
             githubversion
             echo ""
@@ -732,7 +962,6 @@ function main() {
         clear
 
         time {
-            servercheck
             if [ "$SETGITHUBREPO" == "1" ]; then
                 githubversion
                 echo ""
@@ -1090,18 +1319,20 @@ function removepkgs() {
         if [ -e "$location" ]; then # If file exists (source file folder)
             cd $location
             #ls
-            filename1=$(cat $(pwd)/PKGBUILD | grep 'pkgbase=' | cut -c 9-)
-            filename2=$(cat $(pwd)/PKGBUILD | grep 'pkgname=' | cut -c 9-)
+            filename1=$(cat PKGBUILD | grep 'pkgbase=' | cut -c 9-)
+            filename2=$(cat PKGBUILD | grep 'pkgname=' | cut -c 9-)
             if [ -n "$filename1" ]; then
                 filename=$filename1
-                find "$DIR"/"$PKGBIN" -name "*$filename*.pkg.*" >"$DIR"/reponames/.rmbin.txt
-                locationbin=$(cat "$DIR"/reponames/.rmbin.txt)
-                #echo "FILENAME=pkgbase"
+                if ls "$DIR"/"$PKGBIN" | grep "$filename*.*" | tee "$DIR"/reponames/.rmbin.txt &>/dev/null; then
+                    locationbin=$(cat "$DIR"/reponames/.rmbin.txt)
+                    #echo "FILENAME=pkgbase"
+                fi
             else
                 filename=$filename2
-                find "$DIR"/"$PKGBIN" -name "*$filename*.pkg.*" >"$DIR"/reponames/.rmbin.txt
-                locationbin=$(cat "$DIR"/reponames/.rmbin.txt)
-                #echo "FILENAME=pkgname"
+                if ls "$DIR"/"$PKGBIN" | grep "$filename*.*" | tee "$DIR"/reponames/.rmbin.txt &>/dev/null; then
+                    locationbin=$(cat "$DIR"/reponames/.rmbin.txt)
+                    #echo "FILENAME=pkgname"
+                fi
             fi
         fi
 
