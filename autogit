@@ -56,8 +56,23 @@ function maincheck() {
             fi
         fi
 
-        # Update check method 3 ".SRCINFO"
-        if [ "$UPDCHECK" == "3" ]; then
+        # Update check method 1: compare "pkgver" + "pkgrel" & "sha512sum of PKGBUILD's via curl"
+        if [ "$UPDCHECK" == "1" ]; then
+            if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
+                LOCALPKGVER=$(cat PKGBUILD | grep 'pkgver=' | cut -c 8-)
+                LOCALPKGREL=$(cat PKGBUILD | grep 'pkgrel=' | cut -c 8-)
+                GETPKGVER=$(echo "$CURL" | grep 'pkgver=' | cut -c 8-)
+                GETPKGREL=$(echo "$CURL" | grep 'pkgrel=' | cut -c 8-)
+                SHA512LOCAL=$(sha512sum PKGBUILD | cut -f 1 -d " ")
+                SHA512ONLINE=$(sha512sum "$ONLINEPKGBUILD" | cut -f 1 -d " ")
+
+                echo -e "\e[1m⚿ local  version: $LOCALPKGVER-$LOCALPKGREL\e[0m"
+                echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
+            fi
+        fi
+
+        # Update check method 2: compare "pkgver" + "pkgrel" of ".SRCINFO's" & "sha512sum" of PKGBUILD's via "git" & "makepkg"
+        if [ "$UPDCHECK" == "2" ]; then
             ONLINESRCDIR="onlinesrcinfo"
             # Local PKGBUILD ".SRCINFO"
             if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
@@ -92,34 +107,8 @@ function maincheck() {
                 LOCALPKGREL=$(cat .SRCINFO | grep 'pkgrel =' | cut -c 11-)
                 GETPKGVER=$(cat "$ONLINESRCDIR"/.SRCINFO | grep 'pkgver =' | cut -c 11-)
                 GETPKGREL=$(cat "$ONLINESRCDIR"/.SRCINFO | grep 'pkgrel =' | cut -c 11-)
-
-                echo -e "\e[1m⚿ local  version: $LOCALPKGVER-$LOCALPKGREL\e[0m"
-                echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
-            fi
-        fi
-
-        # Update check method 2 "sha512sums"
-        if [ "$UPDCHECK" == "2" ]; then
-            if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
-                LOCALPKGVER=$(cat PKGBUILD | grep 'pkgver=' | cut -c 8-)
-                LOCALPKGREL=$(cat PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-                GETPKGVER=$(echo "$CURL" | grep 'pkgver=' | cut -c 8-)
-                GETPKGREL=$(echo "$CURL" | grep 'pkgrel=' | cut -c 8-)
                 SHA512LOCAL=$(sha512sum PKGBUILD | cut -f 1 -d " ")
-                SHA512ONLINE=$(sha512sum "$ONLINEPKGBUILD" | cut -f 1 -d " ")
-
-                echo -e "\e[1m⚿ local  version: $LOCALPKGVER-$LOCALPKGREL\e[0m"
-                echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
-            fi
-        fi
-
-        # Update check method 1 "pkgver" "pkgrel"
-        if [ "$UPDCHECK" == "1" ]; then
-            if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
-                LOCALPKGVER=$(cat PKGBUILD | grep 'pkgver=' | cut -c 8-)
-                LOCALPKGREL=$(cat PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-                GETPKGVER=$(echo "$CURL" | grep 'pkgver=' | cut -c 8-)
-                GETPKGREL=$(echo "$CURL" | grep 'pkgrel=' | cut -c 8-)
+                SHA512ONLINE=$(sha512sum "$ONLINESRCDIR/original/PKGBUILD" | cut -f 1 -d " ")
 
                 echo -e "\e[1m⚿ local  version: $LOCALPKGVER-$LOCALPKGREL\e[0m"
                 echo -e "\e[1m⚿ online version: $GETPKGVER-$GETPKGREL\e[0m"
@@ -195,15 +184,12 @@ function maincheck() {
             fi
         fi
 
-        if [ "$UPDCHECK" == "3" ] && [ -e "PKGBUILD" ] && [ "$GETPKGVER" == "$LOCALPKGVER" ] && [ "$GETPKGREL" == "$LOCALPKGREL" ]; then # If PKGBUILD exists and "pkgver" and "pkgrel" match; then
-                echo -e "\e[2m🗹 Up-to-Date\e[0m"
-                rm -rf "$ONLINEPKGBUILD" &>/dev/null
-        elif [ "$UPDCHECK" == "2" ] && [ -e "PKGBUILD" ] && [ "$SHA512LOCAL" == "$SHA512ONLINE" ]; then # If PKGBUILD exists and SHA512 sums match; then
-                echo -e "\e[2m🗹 Up-to-Date\e[0m"
-                rm -rf "$ONLINEPKGBUILD" &>/dev/null
-        elif [ "$UPDCHECK" == "1" ] && [ -e "PKGBUILD" ] && [ "$GETPKGVER" == "$LOCALPKGVER" ] && [ "$GETPKGREL" == "$LOCALPKGREL" ]; then # If PKGBUILD exists and "pkgver" and "pkgrel" match; then
-                echo -e "\e[2m🗹 Up-to-Date\e[0m"
-                rm -rf "$ONLINEPKGBUILD" &>/dev/null
+        if [ "$UPDCHECK" == "2" ] && [ -e "PKGBUILD" ] && [ "$GETPKGVER" == "$LOCALPKGVER" ] && [ "$GETPKGREL" == "$LOCALPKGREL" ] && [ "$SHA512LOCAL" == "$SHA512ONLINE" ]; then # If PKGBUILD exists, "pkgver" + "pkgrel" and SHA-512 sums match
+            echo -e "\e[2m🗹 Up-to-Date\e[0m"
+            rm -rf "$ONLINEPKGBUILD" &>/dev/null
+        elif [ "$UPDCHECK" == "1" ] && [ -e "PKGBUILD" ] && [ "$GETPKGVER" == "$LOCALPKGVER" ] && [ "$GETPKGREL" == "$LOCALPKGREL" ] && [ "$SHA512LOCAL" == "$SHA512ONLINE" ]; then # If PKGBUILD exists, "pkgver" + "pkgrel" and SHA-512 sums match
+            echo -e "\e[2m🗹 Up-to-Date\e[0m"
+            rm -rf "$ONLINEPKGBUILD" &>/dev/null
         else
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
             git fetch origin &>/dev/null
