@@ -3,19 +3,45 @@
 # Set autogit directory
 DIR=$HOME/autogit
 #
-# Check if local config exists
-if [ -e "$DIR" ]; then
-    #echo "local config found"
-    echo &>/dev/null
+# Check if a local configuration exists
+if [ -e "$DIR" ]; then                  # If local autogit folder exists
+    if [ -e "$DIR/autogit.conf" ]; then # If local autogit.conf file exists
+
+        # Load User configuration
+        # This is the default behavior to quickly change all settings without the need of root access,
+        # but can be changed by deleting the ".conf" in "$DIR", to use the root file instead.
+        configdir=$DIR
+        . $configdir/autogit.conf
+
+        # Check if the local ".conf" needs to be merged with the new package ".conf"
+        # because code changes require it.
+        # Define a hard coded variable, which will be checked inside the ".conf file"
+        if [ "$CONFVER" == "1.7.3" ]; then
+            echo "Up to date configuration" &>/dev/null
+        else
+            clear
+            echo ""
+            echo -e " \e[1mPackage Update - manual intervention required!\e[0m"
+            echo -e " \e[1mPlease merge the changes of \e[7m/etc/autogit/autogit.conf\e[0m \e[1mfor usage!\e[0m"
+            echo ""
+            exit 1
+        fi
+    else
+        # If a local "autogit.conf" file does not exist, but the autogit folder is present in "$DIR",
+        # we need to assume the user wants to use the root configuration file instead.
+        # This means a new configuration file can be detected via a ".pacnew" file and
+        # should not require a message on changes, as this is user preference.
+        # Load root configuration
+        configdir=/etc/autogit
+        . $configdir/autogit.conf
+    fi
 else
-    mkdir -p $DIR
-    cp -r /usr/share/autogit $HOME
-    newconfig=1
+    # Create a local configuration on first run or if "$DIR" is not found
+    if [ -e "/etc/autogit" ]; then
+        mkdir -p "$DIR" && cp -r /etc/autogit/* "$DIR"
+        newconfig=1
+    fi
 fi
-#
-# Load Config
-configdir=$DIR
-. $configdir/autogit.conf
 #
 # Messages
 GITHUBMSG="\e[1mGithub repo updated - \e[7m$GITHUBBINARY\e[0m\e[0m"
@@ -1488,10 +1514,12 @@ function modecheck() {
         fi
     fi
     if [ "$newconfig" == "1" ]; then
+        clear
         echo ""
-        echo -e " \e[1mLocal config generated @ \e[7m$DIR\e[0m"
+        echo -e " \e[1mLocal configuration generated in \e[7m$DIR\e[0m"
         echo ""
-        echo -e " \e[1mplease configure \e[7mautogit.conf\e[0m \e[1mfor usage.\e[0m"
+        echo -e " \e[1mplease configure \e[7mautogit.conf\e[0m \e[1mfor usage!\e[0m"
+        echo ""
     fi
 }
 modecheck
