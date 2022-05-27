@@ -4,7 +4,7 @@ Autogit is a Bash tool to automatically build, update or install Pacman applicat
 
 2 different options are available to compare and update applications. In case of a "-git" package it checks for the latest commit to update and can either run once or in a loop with a timer setting.
 
-More information on how to set it up is available in autogit.conf, examples are included.
+More information on how to set it up is available in [autogit.conf](https://github.com/puxplaying/autogit/blob/master/autogit.conf), examples are included.
 
 Currently the AUR, 6 Github and 6 Gitlab sources are available to use. There is no limitation of packages for each source, which need to be added to the *reponames* folder source files.
 
