@@ -78,6 +78,113 @@ GITLABMSGCUST5="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM5\e[0m\e[0m"
 AURMSG="\e[1mAUR repo updated - \e[7m$AURBINARY\e[0m\e[0m"
 FAILEDBUILDMSG="\e[31mPackage build failed, removing ...\e[0m"
 #
+# Supported build options
+function buildoptions() {
+    if [ "$var" == "1" ]; then
+        ls
+        folder="$(printf '%q\n' "${PWD##*/}")"
+        cd ..
+        if buildpkg -c -a multilib -p $folder; then
+            mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+            find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+            setrepoadd=1
+        else
+            echo -e "$FAILEDBUILDMSG"
+            rm -rf $folder/PKGBUILD &>/dev/null
+            failedbuild=1
+        fi
+    else
+        if [ "$var" == "0" ]; then
+            if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
+                mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                setrepoadd=1
+            else
+                echo -e "$FAILEDBUILDMSG"
+                rm -rf PKGBUILD &>/dev/null
+                failedbuild=1
+            fi
+        else
+            if [ "$var" == "2" ]; then
+                if time makepkg -srci --noconfirm; then
+                    echo "installed ..."
+                else
+                    echo -e "$FAILEDBUILDMSG"
+                    rm -rf PKGBUILD &>/dev/null
+                    failedbuild=1
+                fi
+            else
+                if [ "$var" == "3" ]; then
+                    ls
+                    folder="$(printf '%q\n' "${PWD##*/}")"
+                    cd ..
+                    if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
+                        mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                        find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                        setrepoadd=1
+                    else
+                        echo -e "$FAILEDBUILDMSG"
+                        rm -rf $folder/PKGBUILD &>/dev/null
+                        failedbuild=1
+                    fi
+                else
+                    if [ "$var" == "4" ]; then
+                        ls
+                        folder="$(printf '%q\n' "${PWD##*/}")"
+                        cd ..
+                        if sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
+                            mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                            find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                            setrepoadd=1
+                        else
+                            echo -e "$FAILEDBUILDMSG"
+                            rm -rf $folder/PKGBUILD &>/dev/null
+                            failedbuild=1
+                        fi
+                    fi
+                fi
+            fi
+        fi
+    fi
+}
+#
+# Find "-git" package source
+function gitpkg_src_check() {
+    gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
+    gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
+    gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
+    gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
+    if [ -e "$gitpkgname" ]; then
+        if [[ -n "$gitpkgname" ]]; then
+            cd "$gitpkgname"
+        fi
+    else
+        if [ -e "$gitpkgname1" ]; then
+            if [[ -n "$gitpkgname1" ]]; then
+                cd "$gitpkgname1"
+            fi
+        else
+            if [ -e "$gitpkgname2" ]; then
+                if [[ -n "$gitpkgname2" ]]; then
+                    cd "$gitpkgname2"
+                fi
+            else
+                ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching files for the first 5 letters of the "pkgname" via "ls"
+                cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names while looping through a file.
+                    if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
+                        # echo "Directory "$line" exists."
+                        echo "$line" | tee .srcf &>/dev/null
+                    fi
+                done
+                rm -rf .gitsrc &>/dev/null
+                GITPKGSRC="$(cat .srcf)"
+                cd "$GITPKGSRC"
+                rm -rf .gitsrc &>/dev/null
+            fi
+        fi
+    fi
+}
+#
 # Main functionality
 function maincheck() {
     if [ -e "$DIR/packages/$GITDIR/$p" ]; then # If file exists
@@ -164,41 +271,9 @@ function maincheck() {
         gitfile=.gitcheck
         if [ -e "PKGBUILD" ]; then # If file exists
             if [ -e "$gitfile" ]; then
-                if grep -E *'-git' "$gitfile" &>/dev/null; then                                              # If result matches (Name has a -git string)
-                    gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
-                    gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
-                    gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
-                    gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
-                    if [ -e "$gitpkgname" ]; then
-                        if [[ -n "$gitpkgname" ]]; then
-                            cd "$gitpkgname"
-                        fi
-                    else
-                        if [ -e "$gitpkgname1" ]; then
-                            if [[ -n "$gitpkgname1" ]]; then
-                                cd "$gitpkgname1"
-                            fi
-                        else
-                            if [ -e "$gitpkgname2" ]; then
-                                if [[ -n "$gitpkgname2" ]]; then
-                                    cd "$gitpkgname2"
-                                fi
-                            else
-                                ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching files for the first 5 letters of the "pkgname" via "ls"
-                                cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names while looping through a file.
-                                    if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
-                                        # echo "Directory "$line" exists."
-                                        echo "$line" | tee .srcf &>/dev/null
-                                    fi
-                                done
-                                rm -rf .gitsrc &>/dev/null
-                                GITPKGSRC="$(cat .srcf)"
-                                cd "$GITPKGSRC"
-                                rm -rf .gitsrc
-                            fi
-                        fi
-                    fi
-
+                if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
+                    # Find "-git" package source
+                    gitpkg_src_check
                     # Check if a gitlog has been created
                     if [ -f ".gitversioncheck" ]; then # If file exists
                         git fetch origin &>/dev/null
@@ -224,11 +299,11 @@ function maincheck() {
                             return 1
                         fi
                     fi
-                    cd ..
                 fi
             fi
         fi
 
+        # Check which update method is selected
         if [ "$UPDCHECK" == "2" ] && [ -e "PKGBUILD" ] && [ "$GETPKGVER" == "$LOCALPKGVER" ] && [ "$GETPKGREL" == "$LOCALPKGREL" ] && [ "$SHA512LOCAL" == "$SHA512ONLINE" ]; then # If PKGBUILD exists, "pkgver" + "pkgrel" and SHA-512 sums match
             echo -e "\e[2m🗹 Up-to-Date\e[0m"
             rm -rf "$ONLINEPKGBUILD" &>/dev/null
@@ -237,76 +312,12 @@ function maincheck() {
             rm -rf "$ONLINEPKGBUILD" &>/dev/null
         else
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
+            cd "$DIR/packages/$GITDIR/$p"
             git fetch origin &>/dev/null
             git checkout origin/$BRANCH &>/dev/null
             git reset --hard origin/$BRANCH # reset files to how they were before
             git clean -f -d                 # clear any other changes you've done
-            if [ "$var" == "1" ]; then
-                ls
-                folder="$(printf '%q\n' "${PWD##*/}")"
-                cd ..
-                if buildpkg -c -a multilib -p $folder; then
-                    mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
-                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    setrepoadd=1
-                else
-                    echo -e "$FAILEDBUILDMSG"
-                    rm -rf $folder/PKGBUILD
-                    failedbuild=1
-                fi
-            else
-                if [ "$var" == "0" ]; then
-                    if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                        mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
-                        find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        setrepoadd=1
-                    else
-                        echo -e "$FAILEDBUILDMSG"
-                        rm -rf PKGBUILD
-                        failedbuild=1
-                    fi
-                else
-                    if [ "$var" == "2" ]; then
-                        if time makepkg -srci --noconfirm; then
-                            echo "installed ..."
-                        else
-                            echo -e "$FAILEDBUILDMSG"
-                            rm -rf PKGBUILD
-                            failedbuild=1
-                        fi
-                    else
-                        if [ "$var" == "3" ]; then
-                            ls
-                            folder="$(printf '%q\n' "${PWD##*/}")"
-                            cd ..
-                            if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                                mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
-                                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                setrepoadd=1
-                            else
-                                echo -e "$FAILEDBUILDMSG"
-                                rm -rf $folder/PKGBUILD
-                                failedbuild=1
-                            fi
-                        else
-                            if [ "$var" == "4" ]; then
-                                ls
-                                folder="$(printf '%q\n' "${PWD##*/}")"
-                                cd ..
-                                if sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
-                                    mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
-                                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                    setrepoadd=1
-                                else
-                                    echo -e "$FAILEDBUILDMSG"
-                                    rm -rf $folder/PKGBUILD
-                                    failedbuild=1
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+            buildoptions
             # Check if it's a Git Package to create a log for updating
             cd "$DIR/packages/$GITDIR/$p"
             gitfile=.gitcheck
@@ -315,40 +326,8 @@ function maincheck() {
                 if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
                     makepkg --nobuild
                     makepkg --printsrcinfo >.SRCINFO
-                    gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
-                    gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
-                    gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
-                    gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
-                    if [ -e "$gitpkgname" ]; then
-                        if [[ -n "$gitpkgname" ]]; then
-                            cd "$gitpkgname"
-                        fi
-                    else
-                        if [ -e "$gitpkgname1" ]; then
-                            if [[ -n "$gitpkgname1" ]]; then
-                                cd "$gitpkgname1"
-                            fi
-                        else
-                            if [ -e "$gitpkgname2" ]; then
-                                if [[ -n "$gitpkgname2" ]]; then
-                                    cd "$gitpkgname2"
-                                fi
-                            else
-                                ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching "pkgname" files via "ls"
-                                cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names in a loop.
-                                    if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
-                                        # echo "Directory "$line" exists."
-                                        echo "$line" | tee .srcf &>/dev/null
-                                    fi
-                                done
-                                rm -rf .gitsrc &>/dev/null
-                                GITPKGSRC="$(cat .srcf)"
-                                cd "$GITPKGSRC"
-                                rm -rf .gitsrc
-                            fi
-                        fi
-                    fi
-
+                    # Find "-git" package source
+                    gitpkg_src_check
                     # Create a gitlog to check for updates
                     gitversionfile=.gitversioncheck
                     gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
@@ -374,65 +353,9 @@ function maincheck() {
         ls
         mv * .* "$DIR/packages/$GITDIR/$p" &>/dev/null
         cd "$DIR/packages/$GITDIR/$p"
-        rm -rf original
+        rm -rf original &>/dev/null
         mkdir -p "$DIR/$GITHUBBINARY"
-        if [ "$var" == "1" ]; then
-            if cd .. && buildpkg -c -p $folder; then
-                mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
-                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                setrepoadd=1
-            else
-                echo -e "$FAILEDBUILDMSG"
-                rm -rf $folder/PKGBUILD
-                failedbuild=1
-            fi
-        else
-            if [ "$var" == "0" ]; then
-                if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                    mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
-                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                    setrepoadd=1
-                else
-                    echo -e "$FAILEDBUILDMSG"
-                    rm -rf PKGBUILD
-                    failedbuild=1
-                fi
-            else
-                if [ "$var" == "2" ]; then
-                    if time makepkg -srci --noconfirm; then
-                        echo "installed ..."
-                    else
-                        echo -e "$FAILEDBUILDMSG"
-                        rm -rf PKGBUILD
-                        failedbuild=1
-                    fi
-                else
-                    if [ "$var" == "3" ]; then
-                        if cd .. && buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                            mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
-                            find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                            setrepoadd=1
-                        else
-                            echo -e "$FAILEDBUILDMSG"
-                            rm -rf $folder/PKGBUILD
-                            failedbuild=1
-                        fi
-                    else
-                        if [ "$var" == "4" ]; then
-                            if cd .. && sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
-                                mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
-                                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                                setrepoadd=1
-                            else
-                                echo -e "$FAILEDBUILDMSG"
-                                rm -rf $folder/PKGBUILD
-                                failedbuild=1
-                            fi
-                        fi
-                    fi
-                fi
-            fi
-        fi
+        buildoptions
         # Check if it's a Git Package to create a log for updating
         cd "$DIR/packages/$GITDIR/$p"
         gitfile=.gitcheck
@@ -441,40 +364,8 @@ function maincheck() {
             if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
                 makepkg --nobuild
                 makepkg --printsrcinfo >.SRCINFO
-                gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
-                gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
-                gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
-                gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
-                if [ -e "$gitpkgname" ]; then
-                    if [[ -n "$gitpkgname" ]]; then
-                        cd "$gitpkgname"
-                    fi
-                else
-                    if [ -e "$gitpkgname1" ]; then
-                        if [[ -n "$gitpkgname1" ]]; then
-                            cd "$gitpkgname1"
-                        fi
-                    else
-                        if [ -e "$gitpkgname2" ]; then
-                            if [[ -n "$gitpkgname2" ]]; then
-                                cd "$gitpkgname2"
-                            fi
-                        else
-                            ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching "pkgname" files via "ls"
-                            cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names in a loop.
-                                if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
-                                    # echo "Directory "$line" exists."
-                                    echo "$line" | tee .srcf &>/dev/null
-                                fi
-                            done
-                            rm -rf .gitsrc &>/dev/null
-                            GITPKGSRC="$(cat .srcf)"
-                            cd "$GITPKGSRC"
-                            rm -rf .gitsrc
-                        fi
-                    fi
-                fi
-
+                # Find "-git" package source
+                gitpkg_src_check
                 # Create a gitlog to check for updates
                 gitversionfile=.gitversioncheck
                 gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
@@ -981,19 +872,19 @@ function manualsync() {
             echo ""
             checked=$(cat "$DIR/packages/pkgs.txt" | wc -l)
             echo -e "     \e[3m🗱  Checked Package(s): $checked\e[0m"
-            rm -rf "$DIR/packages/pkgs.txt"
+            rm -rf "$DIR/packages/pkgs.txt" &>/dev/null
         fi
         if [ -e "$DIR/packages/instpkgs.txt" ]; then
             checked=$(cat "$DIR/packages/instpkgs.txt" | wc -l)
             echo -e "     \e[3m🗱  Compiled Package(s): $checked\e[0m"
             cat -b "$DIR/packages/instpkgs.txt"
-            rm -rf "$DIR/packages/instpkgs.txt"
+            rm -rf "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
         if [ -e "$DIR/packages/failed.txt" ]; then
             checked=$(cat "$DIR/packages/failed.txt" | wc -l)
             echo -e "     \e[3m🗱  Failed to Build: $checked\e[0m"
             cat -b "$DIR/packages/failed.txt"
-            rm -rf "$DIR/packages/failed.txt"
+            rm -rf "$DIR/packages/failed.txt" &>/dev/null
         fi
         echo ""
         echo -e "\e[1m Elapsed Time: \e[0m"
@@ -1154,19 +1045,19 @@ function main() {
                 echo ""
                 checked=$(cat "$DIR/packages/pkgs.txt" | wc -l)
                 echo -e "     \e[3m🗱  Checked Package(s): $checked\e[0m"
-                rm -rf "$DIR/packages/pkgs.txt"
+                rm -rf "$DIR/packages/pkgs.txt" &>/dev/null
             fi
             if [ -e "$DIR/packages/instpkgs.txt" ]; then
                 checked=$(cat "$DIR/packages/instpkgs.txt" | wc -l)
                 echo -e "     \e[3m🗱  Compiled Package(s): $checked\e[0m"
                 cat -b "$DIR/packages/instpkgs.txt"
-                rm -rf "$DIR/packages/instpkgs.txt"
+                rm -rf "$DIR/packages/instpkgs.txt" &>/dev/null
             fi
             if [ -e "$DIR/packages/failed.txt" ]; then
                 checked=$(cat "$DIR/packages/failed.txt" | wc -l)
                 echo -e "     \e[3m🗱  Failed to Build: $checked\e[0m"
                 cat -b "$DIR/packages/failed.txt"
-                rm -rf "$DIR/packages/failed.txt"
+                rm -rf "$DIR/packages/failed.txt" &>/dev/null
             fi
             echo ""
             echo -e "\e[1m Elapsed Time: \e[0m"
@@ -1449,11 +1340,11 @@ function removepkgs() {
 #
 function cleanup() {
     # Clean Up
-    rm -rf "$DIR"/reponames/.selected.txt
-    rm -rf "$DIR"/reponames/.output.txt
-    rm -rf "$DIR"/reponames/.toremove.txt
-    rm -rf "$DIR"/reponames/.rm.txt
-    rm -rf "$DIR"/reponames/.rmbin.txt
+    rm -rf "$DIR"/reponames/.selected.txt &>/dev/null
+    rm -rf "$DIR"/reponames/.output.txt &>/dev/null
+    rm -rf "$DIR"/reponames/.toremove.txt &>/dev/null
+    rm -rf "$DIR"/reponames/.rm.txt &>/dev/null
+    rm -rf "$DIR"/reponames/.rmbin.txt &>/dev/null
 }
 # Run fzf options
 # Flags
