@@ -382,6 +382,14 @@ function maincheck() {
     fi
 }
 #
+# Function for checked and failed to build packages
+function checked_and_failed_pkgs() {
+    printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null # Checked Packages
+    if [ "$failedbuild" == "1" ]; then
+        printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
+        failedbuild=0
+    fi
+}
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversion() {
     while IFS="" read -r p || [ -n "$p" ]; do
@@ -397,11 +405,8 @@ function githubversion() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null # Compiled packages
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null # Checked Packages
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITHUBSOURCE #< $GITHUBSOURCE1
 }
 #
@@ -423,11 +428,8 @@ function githubversioncustom() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITHUBSOURCECUSTOM #< $GITHUBSOURCE1
 }
 #
@@ -449,11 +451,8 @@ function githubversioncustom2() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITHUBSOURCECUSTOM2 #< $GITHUBSOURCE1
 }
 #
@@ -475,11 +474,8 @@ function githubversioncustom3() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITHUBSOURCECUSTOM3 #< $GITHUBSOURCE1
 }
 #
@@ -501,11 +497,8 @@ function githubversioncustom4() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITHUBSOURCECUSTOM4 #< $GITHUBSOURCE1
 }
 #
@@ -527,11 +520,8 @@ function githubversioncustom5() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITHUBSOURCECUSTOM5 #< $GITHUBSOURCE1
 }
 #
@@ -553,11 +543,8 @@ function gitlabversion() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITLABSOURCE #< $GITHUBSOURCE1
 }
 #
@@ -579,11 +566,8 @@ function gitlabversioncustom() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITLABSOURCECUSTOM #< $GITHUBSOURCE1
 }
 #
@@ -605,11 +589,8 @@ function gitlabversioncustom2() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITLABSOURCECUSTOM2 #< $GITHUBSOURCE1
 }
 #
@@ -631,11 +612,8 @@ function gitlabversioncustom3() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITLABSOURCECUSTOM3 #< $GITHUBSOURCE1
 }
 #
@@ -658,11 +636,8 @@ function gitlabversioncustom4() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITLABSOURCECUSTOM4 #< $GITHUBSOURCE1
 }
 #
@@ -685,11 +660,8 @@ function gitlabversioncustom5() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$GITLABSOURCECUSTOM5 #< $GITHUBSOURCE1
 }
 #
@@ -711,11 +683,8 @@ function aur() {
             setrepoadd=0
             printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
         fi
-        printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null
-        if [ "$failedbuild" == "1" ]; then
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
-            failedbuild=0
-        fi
+        # Function for checked and failed to build packages
+        checked_and_failed_pkgs
     done <$AURSOURCE #< $GITHUBSOURCE1
 }
 #
@@ -894,174 +863,7 @@ function manualsync() {
 # Run the script in a loop
 function main() {
     while true; do
-
-        clear
-
-        time {
-            if [ "$SETGITHUBREPO" == "1" ]; then
-                githubversion
-                echo ""
-                echo -e "$GITHUBMSG"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub1" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITHUBBINARY/$GITHUBBINARY.db.tar.gz $DIR/$GITHUBBINARY/*.pkg.* &>/dev/null
-                    setrepoaddgithub1=0
-                fi
-            fi
-            if [ "$SETCUSTGITHUBREPO" == "1" ]; then
-                githubversioncustom
-                echo ""
-                echo -e "$GITHUBMSGCUST"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub2" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITHUBBINARYCUSTOM/$GITHUBBINARYCUSTOM.db.tar.gz $DIR/$GITHUBBINARYCUSTOM/*.pkg.* &>/dev/null
-                    setrepoaddgithub2=0
-                fi
-            fi
-            if [ "$SETCUSTGITHUBREPO2" == "1" ]; then
-                githubversioncustom2
-                echo ""
-                echo -e "$GITHUBMSGCUST2"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub3" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITHUBBINARYCUSTOM2/$GITHUBBINARYCUSTOM2.db.tar.gz $DIR/$GITHUBBINARYCUSTOM2/*.pkg.* &>/dev/null
-                    setrepoaddgithub3=0
-                fi
-            fi
-            if [ "$SETCUSTGITHUBREPO3" == "1" ]; then
-                githubversioncustom3
-                echo ""
-                echo -e "$GITHUBMSGCUST3"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub4" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITHUBBINARYCUSTOM3/$GITHUBBINARYCUSTOM3.db.tar.gz $DIR/$GITHUBBINARYCUSTOM3/*.pkg.* &>/dev/null
-                    setrepoaddgithub4=0
-                fi
-            fi
-            if [ "$SETCUSTGITHUBREPO4" == "1" ]; then
-                githubversioncustom4
-                echo ""
-                echo -e "$GITHUBMSGCUST4"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub5" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITHUBBINARYCUSTOM4/$GITHUBBINARYCUSTOM4.db.tar.gz $DIR/$GITHUBBINARYCUSTOM4/*.pkg.* &>/dev/null
-                    setrepoaddgithub5=0
-                fi
-            fi
-            if [ "$SETCUSTGITHUBREPO5" == "1" ]; then
-                githubversioncustom5
-                echo ""
-                echo -e "$GITHUBMSGCUST5"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub6" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITHUBBINARYCUSTOM5/$GITHUBBINARYCUSTOM5.db.tar.gz $DIR/$GITHUBBINARYCUSTOM5/*.pkg.* &>/dev/null
-                    setrepoaddgithub6=0
-                fi
-            fi
-            if [ "$SETGITLABREPO" == "1" ]; then
-                gitlabversion
-                echo ""
-                echo -e "$GITLABMSG"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab1" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITLABBINARY/$GITLABBINARY.db.tar.gz $DIR/$GITLABBINARY/*.pkg.* &>/dev/null
-                    setrepoaddgitlab1=0
-                fi
-            fi
-            if [ "$SETGITLABREPOCUSTOM" == "1" ]; then
-                gitlabversioncustom
-                echo ""
-                echo -e "$GITLABMSGCUST"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab2" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITLABBINARYCUSTOM/$GITLABBINARYCUSTOM.db.tar.gz $DIR/$GITLABBINARYCUSTOM/*.pkg.* &>/dev/null
-                    setrepoaddgitlab2=0
-                fi
-            fi
-            if [ "$SETGITLABREPOCUSTOM2" == "1" ]; then
-                gitlabversioncustom2
-                echo ""
-                echo -e "$GITLABMSGCUST2"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab3" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITLABBINARYCUSTOM2/$GITLABBINARYCUSTOM2.db.tar.gz $DIR/$GITLABBINARYCUSTOM2/*.pkg.* &>/dev/null
-                    setrepoaddgitlab3=0
-                fi
-            fi
-            if [ "$SETGITLABREPOCUSTOM3" == "1" ]; then
-                gitlabversioncustom3
-                echo ""
-                echo -e "$GITLABMSGCUST3"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab4" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITLABBINARYCUSTOM3/$GITLABBINARYCUSTOM3.db.tar.gz $DIR/$GITLABBINARYCUSTOM3/*.pkg.* &>/dev/null
-                    setrepoaddgitlab4=0
-                fi
-            fi
-            if [ "$SETGITLABREPOCUSTOM4" == "1" ]; then
-                gitlabversioncustom4
-                echo ""
-                echo -e "$GITLABMSGCUST4"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab5" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITLABBINARYCUSTOM4/$GITLABBINARYCUSTOM4.db.tar.gz $DIR/$GITLABBINARYCUSTOM4/*.pkg.* &>/dev/null
-                    setrepoaddgitlab5=0
-                fi
-            fi
-            if [ "$SETGITLABREPOCUSTOM5" == "1" ]; then
-                gitlabversioncustom5
-                echo ""
-                echo -e "$GITLABMSGCUST5"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab6" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$GITLABBINARYCUSTOM5/$GITLABBINARYCUSTOM5.db.tar.gz $DIR/$GITLABBINARYCUSTOM5/*.pkg.* &>/dev/null
-                    setrepoaddgitlab6=0
-                fi
-            fi
-            if [ "$AURREPO" == "1" ]; then
-                aur
-                echo ""
-                echo -e "$AURMSG"
-                # Local pacman repository update - rename repo to your preference
-                if [ "$REPOADD" == "1" ] && [ "$setrepoaddaur" == "1" ]; then
-                    echo -e "\e[1mUpdating Database ...\e[0m"
-                    repo-add $DIR/$AURBINARY/$AURBINARY.db.tar.gz $DIR/$AURBINARY/*.pkg.* &>/dev/null
-                    setrepoaddaur=0
-                fi
-            fi
-            if [ -e "$DIR/packages/pkgs.txt" ]; then
-                echo ""
-                checked=$(cat "$DIR/packages/pkgs.txt" | wc -l)
-                echo -e "     \e[3m🗱  Checked Package(s): $checked\e[0m"
-                rm -rf "$DIR/packages/pkgs.txt" &>/dev/null
-            fi
-            if [ -e "$DIR/packages/instpkgs.txt" ]; then
-                checked=$(cat "$DIR/packages/instpkgs.txt" | wc -l)
-                echo -e "     \e[3m🗱  Compiled Package(s): $checked\e[0m"
-                cat -b "$DIR/packages/instpkgs.txt"
-                rm -rf "$DIR/packages/instpkgs.txt" &>/dev/null
-            fi
-            if [ -e "$DIR/packages/failed.txt" ]; then
-                checked=$(cat "$DIR/packages/failed.txt" | wc -l)
-                echo -e "     \e[3m🗱  Failed to Build: $checked\e[0m"
-                cat -b "$DIR/packages/failed.txt"
-                rm -rf "$DIR/packages/failed.txt" &>/dev/null
-            fi
-            echo ""
-            echo -e "\e[1m Elapsed Time: \e[0m"
-        }
+        manualsync
         echo ""
         echo -e "\e[1mPress \e[7m[Ctrl]\e[0m+\e[1m\e[7m[C]\e[0m \e[1mto stop \e[3mautogit\e[0m"
         countdown() {
