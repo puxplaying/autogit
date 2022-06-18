@@ -26,7 +26,7 @@ How to install:
 How to run:
 
 - `autogit`
-- `autogit -h`
+- `autogit -h` (Help Page and fzf-UI options to manage packages)
 
 To run it automatically without a password prompt for `buildpkg`, it can be added to `sudoers` via:
 
