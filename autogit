@@ -194,15 +194,14 @@ function maincheck() {
         CURL=$(curl -f -s "$GITHUBURL" | tee "$ONLINEPKGBUILD")
 
         # Check for a internet connection
-        if ! [[ -n "$CURL" ]] && [ -s "$ONLINEPKGBUILD" ]; then # Check if CURL fails and file is empty
+        if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
             echo "No online connection ..retrying"
             sleep 2
-            if ! [[ -n "$CURL" ]] && [ -s "$ONLINEPKGBUILD" ]; then # Check if CURL fails and file is empty
+            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
                 echo "No online connection ..retrying"
                 sleep 2
-                if ! [[ -n "$CURL" ]] && [ -s "$ONLINEPKGBUILD" ]; then # Check if CURL fails and file is empty
+                if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
                     echo "No online connection ..exit!"
-                    rm -rf "$ONLINEPKGBUILD" &>/dev/null
                     exit 1
                 fi
             fi
@@ -311,8 +310,23 @@ function maincheck() {
             echo -e "\e[2m🗹 Up-to-Date\e[0m"
             rm -rf "$ONLINEPKGBUILD" &>/dev/null
         else
+
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
             cd "$DIR/packages/$GITDIR/$p"
+
+            # Check for a internet connection
+            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+                echo "No online connection ..retrying"
+                sleep 2
+                if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+                    echo "No online connection ..retrying"
+                    sleep 2
+                    if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+                        echo "No online connection ..exit!"
+                        exit 1
+                    fi
+                fi
+            fi
             git fetch origin &>/dev/null
             git checkout origin/$BRANCH &>/dev/null
             git reset --hard origin/$BRANCH # reset files to how they were before
@@ -343,7 +357,22 @@ function maincheck() {
             fi
         fi
     else
+
         echo "Package does not exist local, downloading ..."
+
+        # Check for a internet connection
+        if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+            echo "No online connection ..retrying"
+            sleep 2
+            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+                echo "No online connection ..retrying"
+                sleep 2
+                if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+                    echo "No online connection ..exit!"
+                    exit 1
+                fi
+            fi
+        fi
         mkdir -p "$DIR/packages/$GITDIR/$p" && cd "$DIR/packages/$GITDIR/$p"
         git clone --single-branch --branch "$BRANCH" "$GITHUBCLONEURL""$p".git
         folder="$(ls)"
