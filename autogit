@@ -62,6 +62,12 @@ else
     fi
 fi
 #
+# Traps (ctrl-c)
+killproc() {
+    echo -e "\n**** Received SIGINT, aborting! ****\n"
+    kill -- -$$ && exit 2
+}
+#
 # Messages
 GITHUBMSG="\e[1mGithub repo updated - \e[7m$GITHUBBINARY\e[0m\e[0m"
 GITHUBMSGCUST="\e[1mGithub repo updated - \e[7m$GITHUBBINARYCUSTOM\e[0m\e[0m"
@@ -1247,6 +1253,9 @@ done
 #
 # Start script without flags
 function modecheck() {
+    # Trap (ctrl-c)
+    trap killproc INT
+
     if [ "$mode" == "1" ]; then
         main
     else
