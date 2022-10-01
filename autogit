@@ -63,7 +63,7 @@ else
 fi
 #
 # Traps (ctrl-c)
-killproc() {
+function killproc() {
     echo -e "\n**** Received SIGINT, aborting! ****\n"
     kill -- -$$ && exit 2
 }
@@ -83,6 +83,23 @@ GITLABMSGCUST4="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM4\e[0m\e[0m"
 GITLABMSGCUST5="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM5\e[0m\e[0m"
 AURMSG="\e[1mAUR repo updated - \e[7m$AURBINARY\e[0m\e[0m"
 FAILEDBUILDMSG="\e[31mPackage build failed, removing ...\e[0m"
+#
+# Online connection check
+function onlinecheck() {
+    # Check for a internet connection
+    if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+        echo "No online connection ..retrying"
+        sleep 2
+        if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+            echo "No online connection ..retrying"
+            sleep 2
+            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+                echo "No online connection ..exit!"
+                exit 1
+            fi
+        fi
+    fi
+}
 #
 # Supported build options
 function buildoptions() {
@@ -198,20 +215,7 @@ function maincheck() {
 
         ONLINEPKGBUILD=".onlinepkgbuild"
         CURL=$(curl -f -s "$GITHUBURL" | tee "$ONLINEPKGBUILD")
-
-        # Check for a internet connection
-        if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
-            echo "No online connection ..retrying"
-            sleep 2
-            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
-                echo "No online connection ..retrying"
-                sleep 2
-                if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
-                    echo "No online connection ..exit!"
-                    exit 1
-                fi
-            fi
-        fi
+        onlinecheck
 
         # Update check method 1: compare "pkgver" + "pkgrel" & "sha512sum of PKGBUILD's via curl"
         if [ "$UPDCHECK" == "1" ]; then
@@ -287,7 +291,7 @@ function maincheck() {
                         if [[ -n "$gitversioncheck1" ]]; then
                             if [[ "$(cat "$gitversionfile1")" == "$(cat ".gitversioncheck")" ]]; then
                                 cd "$DIR/packages/$GITDIR/$p"
-                                echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
+                                echo -e "\e[2m🗹 Up-to-Date\e[0m"
                                 rm -rf .onlinepkgbuild &>/dev/null
                                 return 1
                             fi
@@ -299,7 +303,7 @@ function maincheck() {
                         # Generate a gitcheck file for a update reference
                         if [[ -n "$gitversioncheck" ]]; then
                             cd "$DIR/packages/$GITDIR/$p"
-                            echo -e "\e[2m🗹 Up-to-Date [Git-Version]\e[0m"
+                            echo -e "\e[2m🗹 Up-to-Date\e[0m"
                             rm -rf .onlinepkgbuild &>/dev/null
                             return 1
                         fi
@@ -320,19 +324,7 @@ function maincheck() {
             echo -e "\e[7mOut-of-Date! Updating ...\e[0m"
             cd "$DIR/packages/$GITDIR/$p"
 
-            # Check for a internet connection
-            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
-                echo "No online connection ..retrying"
-                sleep 2
-                if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
-                    echo "No online connection ..retrying"
-                    sleep 2
-                    if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
-                        echo "No online connection ..exit!"
-                        exit 1
-                    fi
-                fi
-            fi
+            onlinecheck
             git fetch origin &>/dev/null
             git checkout origin/$BRANCH &>/dev/null
             git reset --hard origin/$BRANCH # reset files to how they were before
@@ -354,7 +346,6 @@ function maincheck() {
                     # Generate a gitcheck file for a update reference
                     if [[ -n "$gitversioncheck" ]]; then
                         cd "$DIR/packages/$GITDIR/$p"
-                        echo -e "\e[2m[Git-Version Updated]\e[0m"
                         rm -rf .onlinepkgbuild &>/dev/null
                         return 1
                     fi
@@ -366,19 +357,7 @@ function maincheck() {
 
         echo "Package does not exist local, downloading ..."
 
-        # Check for a internet connection
-        if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
-            echo "No online connection ..retrying"
-            sleep 2
-            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
-                echo "No online connection ..retrying"
-                sleep 2
-                if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
-                    echo "No online connection ..exit!"
-                    exit 1
-                fi
-            fi
-        fi
+        onlinecheck
         mkdir -p "$DIR/packages/$GITDIR/$p" && cd "$DIR/packages/$GITDIR/$p"
         git clone --single-branch --branch "$BRANCH" "$GITHUBCLONEURL""$p".git
         folder="$(ls)"
@@ -407,7 +386,6 @@ function maincheck() {
                 # Generate a gitcheck file for a update reference
                 if [[ -n "$gitversioncheck" ]]; then
                     cd "$DIR/packages/$GITDIR/$p"
-                    echo -e "\e[2m[Git-Version]\e[0m"
                     rm -rf .onlinepkgbuild &>/dev/null
                     return 1
                 fi
