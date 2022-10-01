@@ -8,7 +8,7 @@ function conf_ver_upd() {
     # Check if the local ".conf" needs to be merged with the new package ".conf"
     # because code changes require it.
     # Define a hard coded variable, which will be checked inside the ".conf file"
-    if [ "$CONFVER" == "1.7.3" ]; then
+    if [ "$CONFVER" == "1.8.0" ]; then
         echo "Up to date configuration" &>/dev/null
     else
         clear
@@ -87,13 +87,13 @@ FAILEDBUILDMSG="\e[31mPackage build failed, removing ...\e[0m"
 # Online connection check
 function onlinecheck() {
     # Check for a internet connection
-    if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+    if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if "curl" fails
         echo "No online connection ..retrying"
         sleep 2
-        if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+        if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if "curl" fails
             echo "No online connection ..retrying"
             sleep 2
-            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if CURL fails
+            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if "curl" fails
                 echo "No online connection ..exit!"
                 exit 1
             fi
@@ -103,23 +103,23 @@ function onlinecheck() {
 #
 # Supported build options
 function buildoptions() {
-    if [ "$var" == "1" ]; then
-        ls
-        folder="$(printf '%q\n' "${PWD##*/}")"
-        cd ..
-        if buildpkg -c -a multilib -p $folder; then
-            mv /var/cache/manjaro-tools/pkg/stable/x86_64/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+    if [ "$var" == "4" ]; then
+        if $MBARG1 $MBARG2 $MBARG3 $MBARG4; then
+            rm -rf *.*.log* *.log &>/dev/null                                    # remove log files
+            mv *.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null                        # move built package
+            rm -rf *.*.tar.* *.zip *.deb &>/dev/null                             # remove left over source packages
             find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
             setrepoadd=1
         else
             echo -e "$FAILEDBUILDMSG"
-            rm -rf $folder/PKGBUILD &>/dev/null
+            rm -rf PKGBUILD &>/dev/null
             failedbuild=1
         fi
     else
-        if [ "$var" == "0" ]; then
-            if time makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
-                mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+        if [ "$var" == "1" ]; then
+            if makepkg $MARG1 $MARG2 $MARG3 $MARG4 $MARG5 $MARG6; then
+                mv *.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
+                rm -rf *.*.tar.* *.zip *.deb &>/dev/null
                 find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                 setrepoadd=1
             else
@@ -128,8 +128,8 @@ function buildoptions() {
                 failedbuild=1
             fi
         else
-            if [ "$var" == "2" ]; then
-                if time makepkg -srci --noconfirm; then
+            if [ "$var" == "0" ]; then
+                if makepkg -srci --noconfirm; then
                     echo "installed ..."
                 else
                     echo -e "$FAILEDBUILDMSG"
@@ -137,12 +137,15 @@ function buildoptions() {
                     failedbuild=1
                 fi
             else
-                if [ "$var" == "3" ]; then
+                if [ "$var" == "2" ]; then
                     ls
                     folder="$(printf '%q\n' "${PWD##*/}")"
                     cd ..
                     if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
-                        mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                        cd "$folder"
+                        rm -rf *.*.log* *.log &>/dev/null
+                        rm -rf *.*.tar.* *.zip *.deb &>/dev/null
+                        mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
                         find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         setrepoadd=1
                     else
@@ -151,12 +154,15 @@ function buildoptions() {
                         failedbuild=1
                     fi
                 else
-                    if [ "$var" == "4" ]; then
+                    if [ "$var" == "3" ]; then
                         ls
                         folder="$(printf '%q\n' "${PWD##*/}")"
                         cd ..
                         if sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
-                            mv *.*.tar.* "$DIR/$GITHUBBINARY" &>/dev/null
+                            mv *.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
+                            cd "$folder"
+                            rm -rf *.*.log* *.log &>/dev/null
+                            rm -rf *.*.tar.* *.zip *.deb &>/dev/null
                             find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                             setrepoadd=1
                         else
