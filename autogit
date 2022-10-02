@@ -8,7 +8,7 @@ function conf_ver_upd() {
     # Check if the local ".conf" needs to be merged with the new package ".conf"
     # because code changes require it.
     # Define a hard coded variable, which will be checked inside the ".conf file"
-    if [ "$CONFVER" == "1.8.0" ]; then
+    if [ "$CONFVER" == "1.8.1" ]; then
         echo "Up to date configuration" &>/dev/null
     else
         clear
@@ -103,7 +103,7 @@ function onlinecheck() {
 #
 # Supported build options
 function buildoptions() {
-    if [ "$var" == "4" ]; then
+    if [ "$var" == "3" ]; then
         if $MBARG1 $MBARG2 $MBARG3 $MBARG4; then
             rm -rf *.*.log* *.log &>/dev/null                                    # remove log files
             mv *.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null                        # move built package
@@ -141,35 +141,17 @@ function buildoptions() {
                     ls
                     folder="$(printf '%q\n' "${PWD##*/}")"
                     cd ..
-                    if buildpkg $ARG1 $ARG2 $ARG3 $ARG4 $ARG5 $ARG6 $folder; then
+                    if sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
+                        mv *.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
                         cd "$folder"
                         rm -rf *.*.log* *.log &>/dev/null
                         rm -rf *.*.tar.* *.zip *.deb &>/dev/null
-                        mv /var/cache/manjaro-tools/pkg/$ARG2/$ARG5/*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
                         find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         setrepoadd=1
                     else
                         echo -e "$FAILEDBUILDMSG"
                         rm -rf $folder/PKGBUILD &>/dev/null
                         failedbuild=1
-                    fi
-                else
-                    if [ "$var" == "3" ]; then
-                        ls
-                        folder="$(printf '%q\n' "${PWD##*/}")"
-                        cd ..
-                        if sudo chrootbuild $MCARG1 $MCARG2 $MCARG3 $MCARG4 $MCARG5 $MCARG6 $folder; then
-                            mv *.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
-                            cd "$folder"
-                            rm -rf *.*.log* *.log &>/dev/null
-                            rm -rf *.*.tar.* *.zip *.deb &>/dev/null
-                            find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                            setrepoadd=1
-                        else
-                            echo -e "$FAILEDBUILDMSG"
-                            rm -rf $folder/PKGBUILD &>/dev/null
-                            failedbuild=1
-                        fi
                     fi
                 fi
             fi
