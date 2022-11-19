@@ -394,6 +394,7 @@ function checked_and_failed_pkgs() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversion() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac # Skip lines that start with "#"
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -415,6 +416,7 @@ function githubversion() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -438,6 +440,7 @@ function githubversioncustom() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom2() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -461,6 +464,7 @@ function githubversioncustom2() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom3() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -484,6 +488,7 @@ function githubversioncustom3() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom4() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -507,6 +512,7 @@ function githubversioncustom4() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom5() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -530,6 +536,7 @@ function githubversioncustom5() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversion() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -553,6 +560,7 @@ function gitlabversion() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -576,6 +584,7 @@ function gitlabversioncustom() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom2() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -599,6 +608,7 @@ function gitlabversioncustom2() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom3() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -623,6 +633,7 @@ function gitlabversioncustom3() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom4() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -647,6 +658,7 @@ function gitlabversioncustom4() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom5() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
@@ -670,6 +682,7 @@ function gitlabversioncustom5() {
 # Update, install, build packages from AUR
 function aur() {
     while IFS="" read -r p || [ -n "$p" ]; do
+        case "$p" in \#*) continue ;; esac
         echo ""
         cd "$DIR"
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
