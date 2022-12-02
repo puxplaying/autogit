@@ -1,1 +1,4 @@
-packages/community/gamemode
+# Commenting with '#' is allowed to ignore applications.
+# Use one application per line and place optional dependencies before the final package.
+# Example:
+#packages/community/gamemode
