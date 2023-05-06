@@ -238,7 +238,7 @@ function maincheck() {
                     git fetch origin &>/dev/null
                     git checkout origin/"$BRANCH" &>/dev/null
                     git reset --hard origin/"$BRANCH" &>/dev/null                               # reset files to how they were before
-                    #git clean -f -d &>/dev/null                                                 # clear any other changes you've done
+                    git clean -f -d &>/dev/null                                                 # clear any other changes you've done
                     makepkg --printsrcinfo >"$DIR/packages/$GITDIR/$p"/"$ONLINESRCDIR"/.SRCINFO # print .SRCINFO file for a reliable online pkg update reference
                     cd "$DIR/packages/$GITDIR/$p" || exit                                       # go to current package directory
                 else
@@ -316,7 +316,7 @@ function maincheck() {
             git fetch origin &>/dev/null
             git checkout origin/"$BRANCH" &>/dev/null
             git reset --hard origin/"$BRANCH" # reset files to how they were before
-            #git clean -f -d                   # clear any other changes you've done
+            git clean -f -d                   # clear any other changes you've done
             buildoptions
             # Check if it's a Git Package to create a log for updating
             cd "$DIR/packages/$GITDIR/$p" || exit
