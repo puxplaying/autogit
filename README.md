@@ -20,10 +20,16 @@ In sum 13 different repos can be enabled/created and will be updated together.
 
 How to install:
 
+This package is available on [Manjaro](https://packages.manjaro.org/?query=autogit) and the [AUR](https://aur.archlinux.org/packages/autogit).
+
+From source:
+
 - `sudo pacman -Syu base-devel git`
 - `git clone https://github.com/puxplaying/autogit.git `
 - `cd autogit`
 - `makepkg -srci`
+
+---
 
 How to run:
 
