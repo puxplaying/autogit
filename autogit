@@ -3,6 +3,12 @@
 # Set autogit directory
 DIR=$HOME/autogit
 #
+# Set cache directory and create it
+CACHEDIR=/tmp/autogit
+if [ -e "$DIR" ]; then
+    mkdir -p "$CACHEDIR"
+fi
+#
 # Configuration file update check
 function conf_ver_upd() {
     # Check if the local ".conf" needs to be merged with the new package ".conf"
@@ -385,11 +391,11 @@ function maincheck() {
 #
 # Additional Files:
 # Checked packages:
-CHECKEDPKGS=$DIR/packages/.pkgs.txt
+CHECKEDPKGS=$CACHEDIR/.pkgs.txt
 # Failed to build packages:
-FAILEDPKGS=$DIR/packages/.failed.txt
+FAILEDPKGS=$CACHEDIR/.failed.txt
 # Compiled packages
-COMPILEDPKGS=$DIR/packages/.compiled.txt
+COMPILEDPKGS=$CACHEDIR/.compiled.txt
 
 # Function for checked and failed to build packages
 function checked_and_failed_pkgs() {
