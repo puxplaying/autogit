@@ -383,11 +383,19 @@ function maincheck() {
     fi
 }
 #
+# Additional Files:
+# Checked packages:
+CHECKEDPKGS=$DIR/packages/.pkgs.txt
+# Failed to build packages:
+FAILEDPKGS=$DIR/packages/.failed.txt
+# Compiled packages
+COMPILEDPKGS=$DIR/packages/.compiled.txt
+
 # Function for checked and failed to build packages
 function checked_and_failed_pkgs() {
-    printf '%s\n' "$p" | tee -a "$DIR/packages/pkgs.txt" &>/dev/null # Checked Packages
+    printf '%s\n' "$p" | tee -a "$CHECKEDPKGS" &>/dev/null # Checked Packages
     if [ "$failedbuild" == "1" ]; then
-        printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/failed.txt" &>/dev/null # Failed to build packages
+        printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$FAILEDPKGS" &>/dev/null # Failed to build packages
         failedbuild=0
     fi
 }
@@ -405,7 +413,7 @@ function githubversion() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub1=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null # Compiled packages
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null # Compiled packages
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -429,7 +437,7 @@ function githubversioncustom() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub2=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -453,7 +461,7 @@ function githubversioncustom2() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub3=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -477,7 +485,7 @@ function githubversioncustom3() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub4=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -501,7 +509,7 @@ function githubversioncustom4() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub5=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -525,7 +533,7 @@ function githubversioncustom5() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgithub6=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -549,7 +557,7 @@ function gitlabversion() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab1=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -573,7 +581,7 @@ function gitlabversioncustom() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab2=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -597,7 +605,7 @@ function gitlabversioncustom2() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab3=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -621,7 +629,7 @@ function gitlabversioncustom3() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab4=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -646,7 +654,7 @@ function gitlabversioncustom4() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab5=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -671,7 +679,7 @@ function gitlabversioncustom5() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddgitlab6=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -695,7 +703,7 @@ function aur() {
         if [ "$setrepoadd" == "1" ]; then
             setrepoaddaur=1
             setrepoadd=0
-            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$DIR/packages/instpkgs.txt" &>/dev/null
+            printf '%s\n' "$p"-["$GITHUBBINARY"] | tee -a "$COMPILEDPKGS" &>/dev/null
         fi
         # Function for checked and failed to build packages
         checked_and_failed_pkgs
@@ -851,23 +859,24 @@ function manualsync() {
                 setrepoaddaur=0
             fi
         fi
-        if [ -e "$DIR/packages/pkgs.txt" ]; then
+        # Print output summary
+        if [ -e "$CHECKEDPKGS" ]; then
             echo ""
-            checked=$(cat "$DIR/packages/pkgs.txt" | wc -l)
+            checked=$(cat "$CHECKEDPKGS" | wc -l)
             echo -e "     \e[3m🗱  Checked Package(s): $checked\e[0m"
-            rm -rf "$DIR/packages/pkgs.txt" &>/dev/null
+            rm -rf "$CHECKEDPKGS" &>/dev/null
         fi
-        if [ -e "$DIR/packages/instpkgs.txt" ]; then
-            checked=$(cat "$DIR/packages/instpkgs.txt" | wc -l)
+        if [ -e "$COMPILEDPKGS" ]; then
+            checked=$(cat "$COMPILEDPKGS" | wc -l)
             echo -e "     \e[3m🗱  Compiled Package(s): $checked\e[0m"
-            cat -b "$DIR/packages/instpkgs.txt"
-            rm -rf "$DIR/packages/instpkgs.txt" &>/dev/null
+            cat -b "$COMPILEDPKGS"
+            rm -rf "$COMPILEDPKGS" &>/dev/null
         fi
-        if [ -e "$DIR/packages/failed.txt" ]; then
-            checked=$(cat "$DIR/packages/failed.txt" | wc -l)
+        if [ -e "$FAILEDPKGS" ]; then
+            checked=$(cat "$FAILEDPKGS" | wc -l)
             echo -e "     \e[3m🗱  Failed to Build: $checked\e[0m"
-            cat -b "$DIR/packages/failed.txt"
-            rm -rf "$DIR/packages/failed.txt" &>/dev/null
+            cat -b "$FAILEDPKGS"
+            rm -rf "$FAILEDPKGS" &>/dev/null
         fi
         echo ""
         echo -e "\e[1m Elapsed Time: \e[0m"
@@ -903,6 +912,7 @@ function main() {
 function pkgchooser() {
     # Check if -e (edit) is run for a different text
     if [ "$edit" == "1" ]; then
+        # shellcheck disable=SC2120
         editfzf() {
             cd "$DIR"/reponames || exit
             files=()
@@ -910,7 +920,7 @@ function pkgchooser() {
                 files+=("$file")
             done < <(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to edit package(s)
     from selected source file(s). 
-    ESC to quit." --preview 'cat "$HOME"/autogit/reponames/{}' --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" --multi --print0)
+    ESC to quit." --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" --multi --print0)
 
             ((${#files})) || return
             "${VISUAL:-${EDITOR:-vi}}" "$@" "${files[@]}"
@@ -922,7 +932,7 @@ function pkgchooser() {
             # Select the source to edit
             SELECTFILE=$(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to remove package(s)
     from selected source file. 
-    ESC to quit. [DRY RUN] " --preview 'cat "$HOME"/autogit/reponames/{}' --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
+    ESC to quit. [DRY RUN] " --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
             $SELECTFILE
         else
             # Check if -b (REBUILD) is run for a different text
@@ -930,13 +940,13 @@ function pkgchooser() {
                 # Select the source to edit
                 SELECTFILE=$(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to rebuild package(s)
     from selected source file. 
-    ESC to quit. " --preview 'cat "$HOME"/autogit/reponames/{}' --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
+    ESC to quit. " --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
                 $SELECTFILE
             else
                 # Select the source to edit
                 SELECTFILE=$(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to remove package(s)
     from selected source file. 
-    ESC to quit. " --preview 'cat "$HOME"/autogit/reponames/{}' --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
+    ESC to quit. " --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
                 $SELECTFILE
             fi
         fi
