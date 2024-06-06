@@ -109,11 +109,15 @@ function onlinecheck() {
 #
 # Supported build options
 function buildoptions() {
+
+    failedbuild=0
+
     if [ "$var" == "3" ]; then
+        # Arch "devtools" - Convenience way option
         if $MBARG1 "$MBARG2" "$MBARG3" "$MBARG4"; then
-            rm -rf *.*.log* *.log &>/dev/null                                    # remove log files
-            mv *.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null                        # move built package
-            rm -rf *.*.tar.* *.zip *.deb &>/dev/null                             # remove left over source packages
+            rm -rf ./*.*.log* ./*.log &>/dev/null                                    # remove log files
+            mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null                        # move built package
+            rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null                             # remove left over source packages
             find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
             setrepoadd=1
         else
@@ -123,9 +127,10 @@ function buildoptions() {
         fi
     else
         if [ "$var" == "1" ]; then
+            # Makepkg building
             if makepkg "$MARG1" "$MARG2" "$MARG3" "$MARG4" "$MARG5" "$MARG6"; then
-                mv *.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
-                rm -rf *.*.tar.* *.zip *.deb &>/dev/null
+                mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
+                rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null
                 find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                 setrepoadd=1
             else
@@ -135,6 +140,7 @@ function buildoptions() {
             fi
         else
             if [ "$var" == "0" ]; then
+                # Makepkg installation
                 if makepkg -srci --noconfirm; then
                     echo "installed ..."
                 else
@@ -144,14 +150,40 @@ function buildoptions() {
                 fi
             else
                 if [ "$var" == "2" ]; then
-                    ls
+                    # Manjaro chrootbuild
+                    # I don't know why, but "chrootbuild" is unable to ignore "unset/empty" variables
+                    # So let's filter them out in a loop
+
+                    # Source folder
                     folder="$(printf '%q\n' "${PWD##*/}")"
+
+                    # "chrootbuild" doesn't like to be inside the "git" directory, but instead wants to be pointed at it
                     cd ..
-                    if sudo chrootbuild "$MCARG1" "$MCARG2" "$MCARG3" "$MCARG4" "$MCARG5" "$MCARG6" "$folder"; then
-                        mv *.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
+
+                    # Define an array with variable names
+                    variables=("MCARG1" "MCARG2" "MCARG3" "MCARG4" "MCARG5" "MCARG6")
+
+                    # Initialize a command string
+                    cmd=""
+
+                    # Loop through the "variables" array and append each set variable to the "cmd" command
+                    for vars in "${variables[@]}"; do
+                        if [ -n "$vars" ]; then
+                            cmd+="\${$vars} "
+                        fi
+                    done
+                    
+                    # Resolve the "cmd" command string via the eval function
+                    ARGUMENTS="$(eval echo "${cmd}")"
+                    BUILDFLAGS="$(printf "%s\n" "$ARGUMENTS")"
+                    BUILDCOMMAND="sudo chrootbuild $BUILDFLAGS $folder"
+                    echo "Buildcommand = \"$BUILDCOMMAND\""
+
+                    if $BUILDCOMMAND; then
+                        mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
                         cd "$folder" || exit
-                        rm -rf *.*.log* *.log &>/dev/null
-                        rm -rf *.*.tar.* *.zip *.deb &>/dev/null
+                        rm -rf ./*.*.log* ./*.log &>/dev/null
+                        rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null
                         find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
                         setrepoadd=1
                     else
@@ -1125,7 +1157,8 @@ function removepkgs() {
         if [ "$dryrun" == "1" ]; then
             if [ -n "$locationbin" ]; then # If file exists (binary folder)
                 #echo
-                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Binary:\e[0m \e[1m"\""$locationbin"\""\e[0m"
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Binary:\e[0m"
+                echo -e "\e[1m""$locationbin""\e[0m"
                 echo -e "\e[1m\e[34m  -> Removing Binary ...\e[0m"
                 echo "Dry Run"
 
@@ -1138,14 +1171,15 @@ function removepkgs() {
                 fi
             fi
         else
-            if [ -n "$locationbin" ]; then # If file exists (binary folder)
+            if [ -n "$locationbin" ]; then # If file exists (binary)
                 #echo
-                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Binary:\e[0m \e[1m"\""$locationbin"\""\e[0m"
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Binary:\e[0m"
+                echo -e "\e[1m""$locationbin""\e[0m"
                 echo -e "\e[1m\e[34m  -> Removing Binary ...\e[0m"
                 # Remove old database first as repo-add has no option to remove deleted binary's when updating it
-                rm -rf "$DIR"/"$PKGBIN"/*"$PKGBIN"* # remove database
+                rm -rf "${DIR:?}"/"$PKGBIN"/*"$PKGBIN"* # remove database
                 locationbinn=$(echo "$locationbin")
-                rm -rf "$locationbinn" # remove binary
+                rm -rf "${DIR:?}"/"$PKGBIN"/"$locationbinn" # remove binary
 
                 # Run repo-add
                 if [ "$rebuild" == "1" ]; then
