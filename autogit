@@ -14,7 +14,7 @@ function conf_ver_upd() {
     # Check if the local ".conf" needs to be merged with the new package ".conf"
     # because code changes require it.
     # Define a hard coded variable, which will be checked inside the ".conf file"
-    if [ "$CONFVER" == "1.8.1" ]; then
+    if [ "$CONFVER" == "1.8.5" ]; then
         echo "Up to date configuration" &>/dev/null
     else
         clear
@@ -1247,6 +1247,7 @@ while test $# -gt 0; do
         echo -e ""
         echo -e " -e, --edit        - [EDIT]"
         echo -e "                     Edit Package List Entries (Commenting With '#' Is Supported)"
+        echo -e "                     NOTE: Make Sure That The (EDITOR) Environment Variable Is Set On Your System!"
         echo -e ""
         echo -e " -d, --dryrun      - [DRY RUN]"
         echo -e "                     Dry Run To Remove Packages - (Nothing Will Be Touched)"
