@@ -36,6 +36,34 @@ How to run:
 - Run `autogit` after installation to create a local configuration
 - `autogit -h` (Help Page and fzf-UI options to manage packages)
 
+ ```
+ Welcome to Autogit's Help Page!
+
+ Autogit runs by default without flags.
+ In order to run autogit, edit the options in
+ "/YourDirectory/autogit/autogit.conf"
+
+ The provided flags will run a fzf UI to manage packages.
+
+ autogit [options]:
+
+ -e, --edit        - [EDIT]
+                     Edit Package List Entries (Commenting With '#' Is Supported)
+                     NOTE: Make Sure That The (EDITOR) Environment Variable Is Set On Your System!
+
+ -d, --dryrun      - [DRY RUN]
+                     Dry Run To Remove Packages - (Nothing Will Be Touched)
+
+ -b, --build       - [REBUILD PACKAGES]
+                     Remove Package Source(s), Binary(s) And Rebuild The Packge(s)
+
+ -r, --remove      - [REMOVE PACKAGES]
+                     Remove Package Source(s), Binary(s), Package List Entry(s),
+                     Old Database Files And Run "repo-add" If Enabled
+
+ -h, --help        - This Help Text
+ ```
+
 To run it automatically without a password prompt for `chrootbuild`, it can be added to `sudoers` via:
 
 `echo "$USER ALL = NOPASSWD: /usr/bin/chrootbuild" | sudo tee /etc/sudoers.d/$USER`
