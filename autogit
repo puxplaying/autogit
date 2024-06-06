@@ -115,9 +115,9 @@ function buildoptions() {
     if [ "$var" == "3" ]; then
         # Arch "devtools" - Convenience way option
         if $MBARG1 "$MBARG2" "$MBARG3" "$MBARG4"; then
-            rm -rf ./*.*.log* ./*.log &>/dev/null                                    # remove log files
-            mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null                        # move built package
-            rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null                             # remove left over source packages
+            rm -rf ./*.*.log* ./*.log &>/dev/null                                # remove log files
+            mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null                      # move built package
+            rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null                       # remove left over source packages
             find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
             setrepoadd=1
         else
@@ -172,7 +172,7 @@ function buildoptions() {
                             cmd+="\${$vars} "
                         fi
                     done
-                    
+
                     # Resolve the "cmd" command string via the eval function
                     ARGUMENTS="$(eval echo "${cmd}")"
                     BUILDFLAGS="$(printf "%s\n" "$ARGUMENTS")"
