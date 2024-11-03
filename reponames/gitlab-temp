@@ -1,1 +1,4 @@
-packages/temp/qt5-webengine
+# Commenting with '#' is allowed to ignore applications.
+# Use one application per line and place optional dependencies before the final package.
+# Example:
+#packages/temp/qt5-webengine

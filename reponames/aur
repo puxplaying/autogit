@@ -1,2 +1,5 @@
-google-chrome
-yaru
+# Commenting with '#' is allowed to ignore applications.
+# Use one application per line and place optional dependencies before the final package.
+# Example:
+#yaru
+#oh-my-zsh-git

@@ -1,6 +1,8 @@
-excalibur1234/pacui
-puxplaying/autogit
-puxplaying/manjaro-update
-puxplaying/toolbox
-puxplaying/mutter-x11-scaling
-puxplaying/gnome-software-snap
+# Commenting with '#' is allowed to ignore applications.
+# Use one application per line and place optional dependencies before the final package.
+# Example:
+#excalibur1234/pacui
+#puxplaying/autogit
+#puxplaying/manjaro-update
+#puxplaying/toolbox
+#puxplaying/mutter-x11-scaling
