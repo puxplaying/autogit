@@ -22,7 +22,7 @@ function conf_ver_upd() {
     # Check if the local ".conf" needs to be merged with the new package ".conf"
     # because code changes require it.
     # Define a hard coded variable, which will be checked inside the ".conf file"
-    if [ "$CONFVER" == "1.8.5" ]; then
+    if [ "$CONFVER" == "2.0.0" ]; then
         echo "Up to date configuration" &>/dev/null
     else
         clear
