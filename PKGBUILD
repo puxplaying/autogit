@@ -8,11 +8,12 @@ arch=('any')
 url="https://github.com/puxplaying/autogit"
 license=('GPL-3.0-or-later')
 depends=(
-  pacman
-  sudo
   bash
   curl
   fzf
+  pacman
+  rsync
+  sudo
 )
 makedepends=(
   git
