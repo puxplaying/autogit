@@ -9,12 +9,20 @@ if [ -e "$DIR" ]; then
     mkdir -p "$CACHEDIR"
 fi
 #
+# Additional Files
+# Checked packages:
+CHECKEDPKGS=$CACHEDIR/.pkgs.txt
+# Failed to build packages:
+FAILEDPKGS=$CACHEDIR/.failed.txt
+# Compiled packages
+COMPILEDPKGS=$CACHEDIR/.compiled.txt
+#
 # Configuration file update check
 function conf_ver_upd() {
     # Check if the local ".conf" needs to be merged with the new package ".conf"
     # because code changes require it.
     # Define a hard coded variable, which will be checked inside the ".conf file"
-    if [ "$CONFVER" == "1.8.5" ]; then
+    if [ "$CONFVER" == "2.0.0" ]; then
         echo "Up to date configuration" &>/dev/null
     else
         clear
@@ -421,13 +429,6 @@ function maincheck() {
     fi
 }
 #
-# Additional Files:
-# Checked packages:
-CHECKEDPKGS=$CACHEDIR/.pkgs.txt
-# Failed to build packages:
-FAILEDPKGS=$CACHEDIR/.failed.txt
-# Compiled packages
-COMPILEDPKGS=$CACHEDIR/.compiled.txt
 
 # Function for checked and failed to build packages
 function checked_and_failed_pkgs() {
@@ -444,6 +445,8 @@ function githubversion() {
         echo ""
         cd "$DIR" || exit
         printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        GITHUBBINARY=$GITHUBBINARY
+        BRANCH=$BRANCH
         GITHUBCLONEURL=$GITHUBCLONEURLC
         GITHUBURL="$GITHUBURLC"$p"/"$BRANCH"/PKGBUILD"
         GITDIR=Github1
@@ -753,6 +756,8 @@ function manualsync() {
 
     clear
 
+    setreposync=0
+
     time {
         if [ "$SETGITHUBREPO" == "1" ]; then
             githubversion
@@ -761,8 +766,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub1" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITHUBBINARY"/"$GITHUBBINARY".db.tar.gz "$DIR"/"$GITHUBBINARY"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITHUBBINARY"/"$GITHUBBINARY".db.tar.gz "$DIR"/"$GITHUBBINARY"/*.pkg.* &>/dev/null
                 setrepoaddgithub1=0
+                setreposync=1
             fi
         fi
         if [ "$SETCUSTGITHUBREPO" == "1" ]; then
@@ -772,8 +778,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub2" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITHUBBINARYCUSTOM"/"$GITHUBBINARYCUSTOM".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM"/"$GITHUBBINARYCUSTOM".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM"/*.pkg.* &>/dev/null
                 setrepoaddgithub2=0
+                setreposync=1
             fi
         fi
         if [ "$SETCUSTGITHUBREPO2" == "1" ]; then
@@ -783,8 +790,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub3" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITHUBBINARYCUSTOM2"/"$GITHUBBINARYCUSTOM2".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM2"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM2"/"$GITHUBBINARYCUSTOM2".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM2"/*.pkg.* &>/dev/null
                 setrepoaddgithub3=0
+                setreposync=1
             fi
         fi
         if [ "$SETCUSTGITHUBREPO3" == "1" ]; then
@@ -794,8 +802,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub4" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITHUBBINARYCUSTOM3"/"$GITHUBBINARYCUSTOM3".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM3"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM3"/"$GITHUBBINARYCUSTOM3".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM3"/*.pkg.* &>/dev/null
                 setrepoaddgithub4=0
+                setreposync=1
             fi
         fi
         if [ "$SETCUSTGITHUBREPO4" == "1" ]; then
@@ -805,8 +814,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub5" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITHUBBINARYCUSTOM4"/"$GITHUBBINARYCUSTOM4".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM4"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM4"/"$GITHUBBINARYCUSTOM4".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM4"/*.pkg.* &>/dev/null
                 setrepoaddgithub5=0
+                setreposync=1
             fi
         fi
         if [ "$SETCUSTGITHUBREPO5" == "1" ]; then
@@ -816,8 +826,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub6" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITHUBBINARYCUSTOM5"/"$GITHUBBINARYCUSTOM5".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM5"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM5"/"$GITHUBBINARYCUSTOM5".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM5"/*.pkg.* &>/dev/null
                 setrepoaddgithub6=0
+                setreposync=1
             fi
         fi
         if [ "$SETGITLABREPO" == "1" ]; then
@@ -827,8 +838,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab1" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITLABBINARY"/"$GITLABBINARY".db.tar.gz "$DIR"/"$GITLABBINARY"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITLABBINARY"/"$GITLABBINARY".db.tar.gz "$DIR"/"$GITLABBINARY"/*.pkg.* &>/dev/null
                 setrepoaddgitlab1=0
+                setreposync=1
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM" == "1" ]; then
@@ -838,8 +850,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab2" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITLABBINARYCUSTOM"/"$GITLABBINARYCUSTOM".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM"/"$GITLABBINARYCUSTOM".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM"/*.pkg.* &>/dev/null
                 setrepoaddgitlab2=0
+                setreposync=1
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM2" == "1" ]; then
@@ -849,8 +862,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab3" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITLABBINARYCUSTOM2"/"$GITLABBINARYCUSTOM2".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM2"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM2"/"$GITLABBINARYCUSTOM2".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM2"/*.pkg.* &>/dev/null
                 setrepoaddgitlab3=0
+                setreposync=1
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM3" == "1" ]; then
@@ -860,8 +874,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab4" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITLABBINARYCUSTOM3"/"$GITLABBINARYCUSTOM3".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM3"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM3"/"$GITLABBINARYCUSTOM3".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM3"/*.pkg.* &>/dev/null
                 setrepoaddgitlab4=0
+                setreposync=1
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM4" == "1" ]; then
@@ -871,8 +886,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab5" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITLABBINARYCUSTOM4"/"$GITLABBINARYCUSTOM4".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM4"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM4"/"$GITLABBINARYCUSTOM4".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM4"/*.pkg.* &>/dev/null
                 setrepoaddgitlab5=0
+                setreposync=1
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM5" == "1" ]; then
@@ -882,8 +898,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab6" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$GITLABBINARYCUSTOM5"/"$GITLABBINARYCUSTOM5".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM5"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM5"/"$GITLABBINARYCUSTOM5".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM5"/*.pkg.* &>/dev/null
                 setrepoaddgitlab6=0
+                setreposync=1
             fi
         fi
         if [ "$AURREPO" == "1" ]; then
@@ -893,8 +910,9 @@ function manualsync() {
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddaur" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                repo-add "$DIR"/"$AURBINARY"/"$AURBINARY".db.tar.gz "$DIR"/"$AURBINARY"/*.pkg.* &>/dev/null
+                $REPOADDCMD "$DIR"/"$AURBINARY"/"$AURBINARY".db.tar.gz "$DIR"/"$AURBINARY"/*.pkg.* &>/dev/null
                 setrepoaddaur=0
+                setreposync=1
             fi
         fi
         # Print output summary
@@ -916,6 +934,8 @@ function manualsync() {
             cat -b "$FAILEDPKGS"
             rm -rf "$FAILEDPKGS" &>/dev/null
         fi
+        # Run repo-sync if enabled
+        repo_rsync
         echo ""
         echo -e "\e[1m Elapsed Time: \e[0m"
     }
@@ -1189,7 +1209,7 @@ function removepkgs() {
                         #echo
                         echo -e "\e[1m\e[32m==>\e[0m \e[1mUpdating Database ...\e[0m"
                         echo -e "\e[1m\e[34m  -> ""$DIR""/$PKGBIN ...\e[0m"
-                        repo-add -n "$DIR"/"$PKGBIN"/"$PKGBIN".db.tar.gz "$DIR"/"$PKGBIN"/*.pkg.* &>/dev/null
+                        $REPOADDCMD "$DIR"/"$PKGBIN"/"$PKGBIN".db.tar.gz "$DIR"/"$PKGBIN"/*.pkg.* &>/dev/null
                     fi
                 fi
             fi
@@ -1309,6 +1329,68 @@ while test $# -gt 0; do
         ;;
     esac
 done
+#
+# Sync all enabled repositories to a custom location via "rsync"
+function repo_rsync() {
+    # Check if the option is enabled
+    if [ "$REPOSYNC" == "1" ]; then
+        # Define an array with variable names for local repos
+        repositories=("$GITHUBBINARY" "$GITHUBBINARYCUSTOM" "$GITHUBBINARYCUSTOM2" "$GITHUBBINARYCUSTOM3" "$GITHUBBINARYCUSTOM4" "$GITHUBBINARYCUSTOM5" "$GITLABBINARY" "$GITLABBINARYCUSTOM" "$GITLABBINARYCUSTOM2" "$GITLABBINARYCUSTOM3" "$GITLABBINARYCUSTOM4" "$GITLABBINARYCUSTOM5" "$AURBINARY")
+        declare -A unique_names
+        # Loop through the original array
+        for name in "${repositories[@]}"; do
+            # Check if the name is already in the unique_names array
+            if [[ ! "${unique_names[$name]}" ]]; then
+                # If not, add it to the unique_names array
+                unique_names[$name]=1
+            fi
+        done
+        # Check if the unique names are repositories
+        echo ""
+        echo -e "Processing \e[1mREPOSYNC\e[0m..."
+        for name in "${!unique_names[@]}"; do
+            # Perform actions for each name
+            cd "$DIR" || exit
+            # If destination repo exists
+            if [ -e "$DIR"/"$name" ] && [ -e "$REPOPATH"/"$name" ] && [ "$setreposync" == "1" ]; then
+                echo ""
+                echo -e "Found \"$name\" in \"$REPOPATH"\"
+                echo -e "Syncing \e[7m[$name]\e[0m ..."
+                if ! $RSYNCCMD "$DIR"/"$name" "$REPOPATH"/; then
+                    echo "Failed with user permissions, trying root..."
+                    if sudo $RSYNCCMD "$DIR"/"$name" "$REPOPATH"/; then
+                        echo -e "Done!"
+                    else
+                        echo -e "Something went wrong, exit."
+                        exit 1
+                    fi
+                fi
+            else
+                if [ -e "$DIR"/"$name" ] && [ -e "$REPOPATH"/"$name" ]; then
+                    echo ""
+                    echo "Found \"$name\" in \"$REPOPATH"\"
+                    echo "Next repo-sync on database update!"
+                fi
+            fi
+            # If destination repo does not exist
+            if [ -e "$DIR"/"$name" ] && [ ! -d "$REPOPATH"/"$name" ]; then
+                echo ""
+                echo -e "\"$name\" repository does not exist in \"$REPOPATH"\"
+                echo -e "Syncing \e[7m[$name]\e[0m ..."
+                if ! $RSYNCCMD "$DIR"/"$name" "$REPOPATH"/; then
+                    echo "Failed with user permissions, trying root..."
+                    if sudo $RSYNCCMD "$DIR"/"$name" "$REPOPATH"/; then
+                        echo -e "Done!"
+                    else
+                        echo -e "Something went wrong, exit."
+                        exit 1
+                    fi
+                fi
+            fi
+        done
+    fi
+}
+
 #
 # Start script without flags
 function modecheck() {
