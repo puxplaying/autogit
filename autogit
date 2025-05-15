@@ -206,40 +206,67 @@ function buildoptions() {
 }
 #
 # Find "-git" package source
+# shellcheck disable=SC2120
 function gitpkg_src_check() {
-    gitpkgname="$(cat .SRCINFO | grep 'source =' | awk -F"/" '{print $NF}' | cut -f1 -d".")" # Try if upstream pkg name is in "source ="
-    gitpkgname1="$(cat .SRCINFO | grep 'pkgname =' | cut -c 11-)"                            # Try if upstream pkg name is in "pkgname ="
-    gitpkgname2="$(cat .SRCINFO | grep 'url =' | awk -F"/" '{print $NF}')"                   # Try if upstream pkg name is in "url ="
-    gitpkgname3="$(cat "$gitfile" | cut -c1-5)"                                              # Cut the first 5 letters of the "-git" package name
-    if [ -e "$gitpkgname" ]; then
-        if [[ -n "$gitpkgname" ]]; then
-            cd "$gitpkgname" || exit
-        fi
-    else
-        if [ -e "$gitpkgname1" ]; then
-            if [[ -n "$gitpkgname1" ]]; then
-                cd "$gitpkgname1" || exit
-            fi
-        else
-            if [ -e "$gitpkgname2" ]; then
-                if [[ -n "$gitpkgname2" ]]; then
-                    cd "$gitpkgname2" || exit
-                fi
-            else
-                ls | grep "$gitpkgname3" | tee .gitsrc &>/dev/null  # Create a list of all matching files for the first 5 letters of the "pkgname" via "ls"
-                cat .gitsrc | while read line || [[ -n $line ]]; do # Try to find the upstream source folder by checking the matching names while looping through a file.
-                    if [ -d "$line" ]; then                         # Check if one of the matching names of the "while loop" is a folder
-                        # echo "Directory "$line" exists."
-                        echo "$line" | tee .srcf &>/dev/null
-                    fi
-                done
-                rm -rf .gitsrc &>/dev/null
-                GITPKGSRC="$(cat .srcf)"
-                cd "$GITPKGSRC" || exit
-                rm -rf .gitsrc &>/dev/null
-            fi
-        fi
+    local PKGBUILD=${1:-PKGBUILD}
+    shopt -s expand_aliases 2>/dev/null || true
+
+    # Define a helper to safely expand variable names
+    safe_eval() {
+        local expr="$1"
+        eval "echo \"\$${expr}\"" 2>/dev/null || echo "$expr"
+    }
+
+    # Source PKGBUILD
+    # shellcheck disable=SC1090
+    if ! source "$PKGBUILD"; then
+        echo "Error: Failed to source $PKGBUILD" >&2
+        return 1
     fi
+
+    # Handle source array safely
+    local srcdir=${srcdir:-$PWD}
+    local entry dir_part url_part dir_name
+
+    # Loop through source array entries
+    # shellcheck disable=SC2154
+    for entry in "${source[@]}"; do
+        [[ "$entry" != *"git+"* ]] && continue
+
+        # Handle name::git+url syntax
+        if [[ "$entry" == *::git+* ]]; then
+            dir_part="${entry%%::git+*}"
+            url_part="${entry#*::git+}"
+        else
+            dir_part=""
+            url_part="$entry"
+        fi
+
+        # If directory name not specified explicitly, extract from URL
+        if [[ -z "$dir_part" ]]; then
+            url_part="${url_part%%#*}" # strip fragment
+            dir_part="$(basename "${url_part}" .git)"
+        fi
+
+        # Expand any variables in dir_part
+        if [[ "$dir_part" =~ \$ ]]; then
+            dir_part="$(safe_eval "${dir_part#\${}")"
+        fi
+
+        dir_name="$dir_part"
+
+        # Check if directory exists and "cd" into it
+        if [[ -d "$srcdir/$dir_name" ]]; then
+            cd "$srcdir/$dir_name" || exit
+            return 0
+        else
+            echo "Git source directory '$dir_name' not found in $srcdir" >&2
+            return 1
+        fi
+    done
+
+    echo "No git source found in PKGBUILD" >&2
+    return 1
 }
 #
 # Main functionality
@@ -371,6 +398,7 @@ function maincheck() {
             if [ -n "$gitcheck" ]; then
                 if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
                     makepkg --nobuild
+                    makepkg --verifysource
                     makepkg --printsrcinfo >.SRCINFO
                     # Find "-git" package source
                     gitpkg_src_check
@@ -411,6 +439,7 @@ function maincheck() {
         if [ -n "$gitcheck" ]; then
             if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
                 makepkg --nobuild
+                makepkg --verifysource
                 makepkg --printsrcinfo >.SRCINFO
                 # Find "-git" package source
                 gitpkg_src_check
