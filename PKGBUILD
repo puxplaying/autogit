@@ -1,22 +1,19 @@
 # Maintainer: Georg Wagner <puxplaying_at_gmail_dot_com>
 
 pkgname=autogit
-pkgver=1.9.0
-pkgrel=2
+pkgver=2.0.1
+pkgrel=1
 pkgdesc="Auto build, update, install PKGBUILDS from Github, Gitlab and AUR"
 arch=('any')
 url="https://github.com/puxplaying/autogit"
 license=('GPL-3.0-or-later')
 depends=(
-  bash
-  curl
-  fzf
-  pacman
-  rsync
-  sudo
-)
-makedepends=(
-  git
+  'bash'
+  'curl'
+  'fzf'
+  'pacman'
+  'rsync'
+  'sudo'
 )
 optdepends=(
   'manjaro-chrootbuild: Needed for Manjaro clean chroot package building'
@@ -24,7 +21,7 @@ optdepends=(
 )
 backup=("etc/$pkgname/$pkgname.conf")
 source=("$pkgname-$pkgver.tar.gz::$url/archive/$pkgver.tar.gz")
-sha256sums=('c5bd919507944703d3aa7ea75719dde43026da0a6de8fae6661c4488229ddd88')
+sha256sums=('24da439a686050236db57ea7841be53d1905359c13a6a942079efdc9a6e4acf2')
 
 package () {
   cd "$pkgname-$pkgver"
