@@ -98,111 +98,131 @@ GITLABMSGCUST5="\e[1mGitlab repo updated - \e[7m$GITLABBINARYCUSTOM5\e[0m\e[0m"
 AURMSG="\e[1mAUR repo updated - \e[7m$AURBINARY\e[0m\e[0m"
 FAILEDBUILDMSG="\e[31mPackage build failed, removing ...\e[0m"
 #
+# Source package directory mapping for efficient lookup
+declare -A SOURCE_MAP=(
+    ["GITHUBSOURCE"]="Github1:$GITHUBBINARY"
+    ["GITHUBSOURCECUSTOM"]="Github2:$GITHUBBINARYCUSTOM"
+    ["GITHUBSOURCECUSTOM2"]="Github3:$GITHUBBINARYCUSTOM2"
+    ["GITHUBSOURCECUSTOM3"]="Github4:$GITHUBBINARYCUSTOM3"
+    ["GITHUBSOURCECUSTOM4"]="Github5:$GITHUBBINARYCUSTOM4"
+    ["GITHUBSOURCECUSTOM5"]="Github6:$GITHUBBINARYCUSTOM5"
+    ["GITLABSOURCE"]="Gitlab1:$GITLABBINARY"
+    ["GITLABSOURCECUSTOM"]="Gitlab2:$GITLABBINARYCUSTOM"
+    ["GITLABSOURCECUSTOM2"]="Gitlab3:$GITLABBINARYCUSTOM2"
+    ["GITLABSOURCECUSTOM3"]="Gitlab4:$GITLABBINARYCUSTOM3"
+    ["GITLABSOURCECUSTOM4"]="Gitlab5:$GITLABBINARYCUSTOM4"
+    ["GITLABSOURCECUSTOM5"]="Gitlab6:$GITLABBINARYCUSTOM5"
+    ["AURSOURCE"]="AUR:$AURBINARY"
+)
+#
 # Online connection check
 function onlinecheck() {
-    # Check for a internet connection
-    if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if "curl" fails
-        echo "No online connection ..retrying"
-        sleep 2
-        if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if "curl" fails
+    # Check for a internet connection with retry logic
+    local retries=3
+    local attempt=1
+    
+    while [ $attempt -le $retries ]; do
+        if curl -f -s "$GITHUBURL" >/dev/null 2>&1; then
+            return 0
+        fi
+        
+        if [ $attempt -lt $retries ]; then
             echo "No online connection ..retrying"
             sleep 2
-            if [ -z "$(curl -f -s "$GITHUBURL")" ]; then # Check if "curl" fails
-                echo "No online connection ..exit!"
-                exit 1
-            fi
         fi
-    fi
+        ((attempt++))
+    done
+    
+    echo "No online connection for $p ..exit!"
+    exit 1
 }
 #
 # Supported build options
 function buildoptions() {
-
     failedbuild=0
 
-    if [ "$var" == "3" ]; then
-        # Arch "devtools" - Convenience way option
-        if $MBARG1 "$MBARG2" "$MBARG3" "$MBARG4"; then
-            rm -rf ./*.*.log* ./*.log &>/dev/null                                # remove log files
-            mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null                      # move built package
-            rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null                       # remove left over source packages
-            find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-            setrepoadd=1
-        else
-            echo -e "$FAILEDBUILDMSG"
-            rm -rf PKGBUILD &>/dev/null
-            failedbuild=1
-        fi
-    else
-        if [ "$var" == "1" ]; then
-            # Makepkg building
-            if makepkg "$MARG1" "$MARG2" "$MARG3" "$MARG4" "$MARG5" "$MARG6"; then
-                mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
-                rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null
-                find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                setrepoadd=1
+    case "$var" in
+        3)
+            # Arch "devtools" - Convenience way option
+            if $MBARG1 "$MBARG2" "$MBARG3" "$MBARG4"; then
+                rm -rf ./*.*.log* ./*.log &>/dev/null                                # remove log files
+                if mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null; then             # move built package
+                    rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null                   # remove left over source packages
+                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    setrepoadd=1
+                else
+                    echo -e "\e[1m\e[31mError: Failed to move package files to \"$DIR/$GITHUBBINARY\"\e[0m"
+                fi
             else
                 echo -e "$FAILEDBUILDMSG"
                 rm -rf PKGBUILD &>/dev/null
                 failedbuild=1
             fi
-        else
-            if [ "$var" == "0" ]; then
-                # Makepkg installation
-                if makepkg -srci --noconfirm; then
-                    echo "installed ..."
+            ;;
+        1)
+            # Makepkg building
+            if makepkg "$MARG1" "$MARG2" "$MARG3" "$MARG4" "$MARG5" "$MARG6"; then
+                if mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null; then
+                    rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null
+                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    setrepoadd=1
                 else
-                    echo -e "$FAILEDBUILDMSG"
-                    rm -rf PKGBUILD &>/dev/null
-                    failedbuild=1
+                    echo -e "\e[1m\e[31mError: Failed to move package files to \"$DIR/$GITHUBBINARY\"\e[0m"
                 fi
             else
-                if [ "$var" == "2" ]; then
-                    # Manjaro chrootbuild
-                    # I don't know why, but "chrootbuild" is unable to ignore "unset/empty" variables
-                    # So let's filter them out in a loop
-
-                    # Source folder
-                    folder="$(printf '%q\n' "${PWD##*/}")"
-
-                    # "chrootbuild" doesn't like to be inside the "git" directory, but instead wants to be pointed at it
-                    cd ..
-
-                    # Define an array with variable names
-                    variables=("MCARG1" "MCARG2" "MCARG3" "MCARG4" "MCARG5" "MCARG6")
-
-                    # Initialize a command string
-                    cmd=""
-
-                    # Loop through the "variables" array and append each set variable to the "cmd" command
-                    for vars in "${variables[@]}"; do
-                        if [ -n "$vars" ]; then
-                            cmd+="\${$vars} "
-                        fi
-                    done
-
-                    # Resolve the "cmd" command string via the eval function
-                    ARGUMENTS="$(eval echo "${cmd}")"
-                    BUILDFLAGS="$(printf "%s\n" "$ARGUMENTS")"
-                    BUILDCOMMAND="sudo chrootbuild $BUILDFLAGS $folder"
-                    echo "Buildcommand = \"$BUILDCOMMAND\""
-
-                    if $BUILDCOMMAND; then
-                        mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null
-                        cd "$folder" || exit
-                        rm -rf ./*.*.log* ./*.log &>/dev/null
-                        rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null
-                        find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
-                        setrepoadd=1
-                    else
-                        echo -e "$FAILEDBUILDMSG"
-                        rm -rf "$folder"/PKGBUILD &>/dev/null
-                        failedbuild=1
-                    fi
-                fi
+                echo -e "$FAILEDBUILDMSG"
+                rm -rf PKGBUILD &>/dev/null
+                failedbuild=1
             fi
-        fi
-    fi
+            ;;
+        0)
+            # Makepkg installation
+            if makepkg -srci --noconfirm; then
+                echo "installed ..."
+            else
+                echo -e "$FAILEDBUILDMSG"
+                rm -rf PKGBUILD &>/dev/null
+                failedbuild=1
+            fi
+            ;;
+        2)
+            # Manjaro chrootbuild
+            local -a chroot_args=()
+            [[ -n "$MCARG1" ]] && chroot_args+=("$MCARG1")
+            [[ -n "$MCARG2" ]] && chroot_args+=("$MCARG2")
+            [[ -n "$MCARG3" ]] && chroot_args+=("$MCARG3")
+            [[ -n "$MCARG4" ]] && chroot_args+=("$MCARG4")
+            [[ -n "$MCARG5" ]] && chroot_args+=("$MCARG5")
+            [[ -n "$MCARG6" ]] && chroot_args+=("$MCARG6")
+
+            # Source folder
+            local folder="$(printf '%q\n' "${PWD##*/}")"
+            local original_dir="$PWD"
+
+            # "chrootbuild" doesn't like to be inside the "git" directory, but instead wants to be pointed at it
+            cd .. || return 1
+
+            echo "Buildcommand = sudo chrootbuild ${chroot_args[*]} $folder"
+
+            if sudo chrootbuild "${chroot_args[@]}" "$folder"; then
+                if mv ./*.*.pkg.* "$DIR/$GITHUBBINARY" &>/dev/null; then
+                    cd "$original_dir" || return 1
+                    rm -rf ./*.*.log* ./*.log &>/dev/null
+                    rm -rf ./*.*.tar.* ./*.zip ./*.deb &>/dev/null
+                    find "$DIR/$GITHUBBINARY" -type d -exec paccache -v -r -k 1 -c {} \; # clean cache
+                    setrepoadd=1
+                else
+                    cd "$original_dir" || return 1
+                    echo -e "\e[1m\e[31mError: Failed to move package files to \"$DIR/$GITHUBBINARY\"\e[0m"
+                fi
+            else
+                echo -e "$FAILEDBUILDMSG"
+                rm -rf "$folder"/PKGBUILD &>/dev/null
+                cd "$original_dir" || return 1
+                failedbuild=1
+            fi
+            ;;
+    esac
 }
 #
 # Find "-git" package source
@@ -227,6 +247,12 @@ function gitpkg_src_check() {
     # Handle source array safely
     local srcdir=${srcdir:-$PWD}
     local entry dir_part url_part dir_name
+
+    # Check if source array is defined and non-empty
+    if [[ -z "${source[*]}" ]]; then
+        echo "No sources defined in PKGBUILD" >&2
+        return 1
+    fi
 
     # Loop through source array entries
     # shellcheck disable=SC2154
@@ -257,7 +283,7 @@ function gitpkg_src_check() {
 
         # Check if directory exists and "cd" into it
         if [[ -d "$srcdir/$dir_name" ]]; then
-            cd "$srcdir/$dir_name" || exit
+            cd "$srcdir/$dir_name" || return 1
             return 0
         else
             echo "Git source directory '$dir_name' not found in $srcdir" >&2
@@ -281,10 +307,10 @@ function maincheck() {
         # Update check method 1: compare "pkgver" + "pkgrel" & "sha512sum of PKGBUILD's via curl"
         if [ "$UPDCHECK" == "1" ]; then
             if [ -e "PKGBUILD" ]; then # If file exists "PKGBUILD"
-                LOCALPKGVER=$(cat PKGBUILD | grep 'pkgver=' | cut -c 8-)
-                LOCALPKGREL=$(cat PKGBUILD | grep 'pkgrel=' | cut -c 8-)
-                GETPKGVER=$(echo "$CURL" | grep 'pkgver=' | cut -c 8-)
-                GETPKGREL=$(echo "$CURL" | grep 'pkgrel=' | cut -c 8-)
+                LOCALPKGVER=$(grep -m1 '^pkgver=' PKGBUILD | cut -c 8-)
+                LOCALPKGREL=$(grep -m1 '^pkgrel=' PKGBUILD | cut -c 8-)
+                GETPKGVER=$(echo "$CURL" | grep -m1 '^pkgver=' | cut -c 8-)
+                GETPKGREL=$(echo "$CURL" | grep -m1 '^pkgrel=' | cut -c 8-)
                 SHA512LOCAL=$(sha512sum PKGBUILD | cut -f 1 -d " ")
                 SHA512ONLINE=$(sha512sum "$ONLINEPKGBUILD" | cut -f 1 -d " ")
 
@@ -341,7 +367,7 @@ function maincheck() {
         gitfile=.gitcheck
         if [ -e "PKGBUILD" ]; then # If file exists
             if [ -e "$gitfile" ]; then
-                if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
+                if grep -qE -- '-git$' "$gitfile" 2>/dev/null; then # If result matches (Name has a -git string)
                     # Find "-git" package source
                     gitpkg_src_check
                     # Check if a gitlog has been created
@@ -396,24 +422,24 @@ function maincheck() {
             gitfile=.gitcheck
             gitcheck="$(echo "$p" | tee "$gitfile")"
             if [ -n "$gitcheck" ]; then
-                if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
-                    makepkg --nobuild
-                    makepkg --verifysource
-                    makepkg --printsrcinfo >.SRCINFO
-                    # Find "-git" package source
-                    gitpkg_src_check
-                    # Create a gitlog to check for updates
-                    gitversionfile=.gitversioncheck
-                    gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
-                    # Generate a gitcheck file for a update reference
-                    if [[ -n "$gitversioncheck" ]]; then
-                        cd "$DIR/packages/$GITDIR/$p" || exit
-                        rm -rf .onlinepkgbuild &>/dev/null
-                        return 1
-                    fi
+            if grep -qE -- '-git$' "$gitfile" 2>/dev/null; then # If result matches (Name has a -git string)
+                makepkg --nobuild
+                makepkg --verifysource
+                makepkg --printsrcinfo >.SRCINFO
+                # Find "-git" package source
+                gitpkg_src_check
+                # Create a gitlog to check for updates
+                gitversionfile=.gitversioncheck
+                gitversioncheck="$(git show | head -1 | tee "$gitversionfile")"
+                # Generate a gitcheck file for a update reference
+                if [[ -n "$gitversioncheck" ]]; then
+                    cd "$DIR/packages/$GITDIR/$p" || exit
+                    rm -rf .onlinepkgbuild &>/dev/null
+                    return 1
                 fi
-                rm -rf "$gitfile" &>/dev/null
             fi
+            rm -rf "$gitfile" &>/dev/null
+        fi
         fi
     else
 
@@ -427,7 +453,7 @@ function maincheck() {
         mv "$folder" original &>/dev/null
         cd original || exit
         ls
-        mv * .* "$DIR/packages/$GITDIR/$p" &>/dev/null
+        mv -- * .* "$DIR/packages/$GITDIR/$p" 2>/dev/null || true
         cd "$DIR/packages/$GITDIR/$p" || exit
         rm -rf original &>/dev/null
         mkdir -p "$DIR/$GITHUBBINARY"
@@ -437,7 +463,7 @@ function maincheck() {
         gitfile=.gitcheck
         gitcheck="$(echo "$p" | tee "$gitfile")"
         if [ -n "$gitcheck" ]; then
-            if grep -E *'-git' "$gitfile" &>/dev/null; then # If result matches (Name has a -git string)
+            if grep -qE -- '-git$' "$gitfile" 2>/dev/null; then # If result matches (Name has a -git string)
                 makepkg --nobuild
                 makepkg --verifysource
                 makepkg --printsrcinfo >.SRCINFO
@@ -470,14 +496,12 @@ function checked_and_failed_pkgs() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversion() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac # Skip lines that start with "#"
+        case "$p" in "" | \#*) continue ;; esac # Skip empty lines and lines that start with "#"
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
-        GITHUBBINARY=$GITHUBBINARY
-        BRANCH=$BRANCH
-        GITHUBCLONEURL=$GITHUBCLONEURLC
-        GITHUBURL="$GITHUBURLC"$p"/"$BRANCH"/PKGBUILD"
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
+        GITHUBCLONEURL="$GITHUBCLONEURLC"
+        GITHUBURL="${GITHUBURLC}${p}/${BRANCH}/PKGBUILD"
         GITDIR=Github1
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -494,14 +518,14 @@ function githubversion() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM
-        BRANCH=$BRANCHCUSTOM
+        local BRANCH=$BRANCHCUSTOM
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM
-        GITHUBURL="$GITHUBURLCCUSTOM"$p"/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITHUBURLCCUSTOM}${p}/${BRANCHCUSTOM}/PKGBUILD"
         GITDIR=Github2
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -518,14 +542,14 @@ function githubversioncustom() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom2() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM2
-        BRANCH=$BRANCHCUSTOM2
+        local BRANCH=$BRANCHCUSTOM2
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM2
-        GITHUBURL="$GITHUBURLCCUSTOM2"$p"/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITHUBURLCCUSTOM2}${p}/${BRANCHCUSTOM2}/PKGBUILD"
         GITDIR=Github3
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -542,14 +566,14 @@ function githubversioncustom2() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom3() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM3
-        BRANCH=$BRANCHCUSTOM3
+        local BRANCH=$BRANCHCUSTOM3
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM3
-        GITHUBURL="$GITHUBURLCCUSTOM3"$p"/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITHUBURLCCUSTOM3}${p}/${BRANCHCUSTOM3}/PKGBUILD"
         GITDIR=Github4
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -566,14 +590,14 @@ function githubversioncustom3() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom4() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM4
-        BRANCH=$BRANCHCUSTOM4
+        local BRANCH=$BRANCHCUSTOM4
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM4
-        GITHUBURL="$GITHUBURLCCUSTOM4"$p"/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITHUBURLCCUSTOM4}${p}/${BRANCHCUSTOM4}/PKGBUILD"
         GITDIR=Github5
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -590,14 +614,14 @@ function githubversioncustom4() {
 # Update, install, build packages from Github repos with available PKGBUILD
 function githubversioncustom5() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITHUBBINARYCUSTOM5
-        BRANCH=$BRANCHCUSTOM5
+        local BRANCH=$BRANCHCUSTOM5
         GITHUBCLONEURL=$GITHUBCLONEURLCCUSTOM5
-        GITHUBURL="$GITHUBURLCCUSTOM5"$p"/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITHUBURLCCUSTOM5}${p}/${BRANCHCUSTOM5}/PKGBUILD"
         GITDIR=Github6
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -614,14 +638,14 @@ function githubversioncustom5() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversion() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARY
-        BRANCH=$BRANCHGITLAB
+        local BRANCH=$BRANCHGITLAB
         GITHUBCLONEURL=$GITLABCLONEURL
-        GITHUBURL="$GITLABURLC"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITLABURLC}${p}/-/raw/${BRANCHGITLAB}/PKGBUILD"
         GITDIR=Gitlab1
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -638,14 +662,14 @@ function gitlabversion() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM
-        BRANCH=$BRANCHGITLABCUSTOM
+        local BRANCH=$BRANCHGITLABCUSTOM
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM
-        GITHUBURL="$GITLABURLCCUSTOM"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITLABURLCCUSTOM}${p}/-/raw/${BRANCHGITLABCUSTOM}/PKGBUILD"
         GITDIR=Gitlab2
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -662,14 +686,14 @@ function gitlabversioncustom() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom2() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM2
-        BRANCH=$BRANCHGITLABCUSTOM2
+        local BRANCH=$BRANCHGITLABCUSTOM2
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM2
-        GITHUBURL="$GITLABURLCCUSTOM2"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITLABURLCCUSTOM2}${p}/-/raw/${BRANCHGITLABCUSTOM2}/PKGBUILD"
         GITDIR=Gitlab3
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -686,14 +710,14 @@ function gitlabversioncustom2() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom3() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM3
-        BRANCH=$BRANCHGITLABCUSTOM3
+        local BRANCH=$BRANCHGITLABCUSTOM3
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM3
-        GITHUBURL="$GITLABURLCCUSTOM3"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITLABURLCCUSTOM3}${p}/-/raw/${BRANCHGITLABCUSTOM3}/PKGBUILD"
         GITDIR=Gitlab4
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -711,14 +735,14 @@ function gitlabversioncustom3() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom4() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM4
-        BRANCH=$BRANCHGITLABCUSTOM4
+        local BRANCH=$BRANCHGITLABCUSTOM4
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM4
-        GITHUBURL="$GITLABURLCCUSTOM4"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITLABURLCCUSTOM4}${p}/-/raw/${BRANCHGITLABCUSTOM4}/PKGBUILD"
         GITDIR=Gitlab5
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -736,14 +760,14 @@ function gitlabversioncustom4() {
 # Update, install, build packages from Gitlab repos with available PKGBUILD
 function gitlabversioncustom5() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$GITLABBINARYCUSTOM5
-        BRANCH=$BRANCHGITLABCUSTOM5
+        local BRANCH=$BRANCHGITLABCUSTOM5
         GITHUBCLONEURL=$GITLABCLONEURLCUSTOM5
-        GITHUBURL="$GITLABURLCCUSTOM5"$p"/-/raw/"$BRANCH"/PKGBUILD"
+        GITHUBURL="${GITLABURLCCUSTOM5}${p}/-/raw/${BRANCHGITLABCUSTOM5}/PKGBUILD"
         GITDIR=Gitlab6
         maincheck
         if [ "$setrepoadd" == "1" ]; then
@@ -760,13 +784,13 @@ function gitlabversioncustom5() {
 # Update, install, build packages from AUR
 function aur() {
     while IFS="" read -r p || [ -n "$p" ]; do
-        case "$p" in \#*) continue ;; esac
+        case "$p" in "" | \#*) continue ;; esac
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
+        printf '\e[1;36m%s\e[m\n' "𝌤 $p" # Print package list entry
         GITHUBBINARY=$AURBINARY
-        BRANCH=master
-        GITHUBURL="$AURCLONEURL""$p"
+        local BRANCH=master
+        GITHUBURL="${AURCLONEURL}${p}"
         GITHUBCLONEURL="$AURURL"
         GITDIR=AUR
         maincheck
@@ -785,163 +809,246 @@ function manualsync() {
 
     clear
 
+    local out
+
     setreposync=0
+
+    # Clear per-pass counters left behind by an interrupted previous run
+    rm -rf "$CHECKEDPKGS" "$COMPILEDPKGS" "$FAILEDPKGS" &>/dev/null
 
     time {
         if [ "$SETGITHUBREPO" == "1" ]; then
             githubversion
-            echo ""
-            echo -e "$GITHUBMSG"
+            if [ "$setrepoaddgithub1" == "1" ]; then
+                echo ""
+                echo -e "$GITHUBMSG"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub1" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITHUBBINARY"/"$GITHUBBINARY".db.tar.gz "$DIR"/"$GITHUBBINARY"/*.pkg.* &>/dev/null
-                setrepoaddgithub1=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITHUBBINARY"/"$GITHUBBINARY".db.tar.gz "$DIR"/"$GITHUBBINARY"/*.pkg.* 2>&1); then
+                    setrepoaddgithub1=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITHUBBINARY\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETCUSTGITHUBREPO" == "1" ]; then
             githubversioncustom
-            echo ""
-            echo -e "$GITHUBMSGCUST"
+            if [ "$setrepoaddgithub2" == "1" ]; then
+                echo ""
+                echo -e "$GITHUBMSGCUST"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub2" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM"/"$GITHUBBINARYCUSTOM".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM"/*.pkg.* &>/dev/null
-                setrepoaddgithub2=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM"/"$GITHUBBINARYCUSTOM".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM"/*.pkg.* 2>&1); then
+                    setrepoaddgithub2=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITHUBBINARYCUSTOM\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETCUSTGITHUBREPO2" == "1" ]; then
             githubversioncustom2
-            echo ""
-            echo -e "$GITHUBMSGCUST2"
+            if [ "$setrepoaddgithub3" == "1" ]; then
+                echo ""
+                echo -e "$GITHUBMSGCUST2"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub3" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM2"/"$GITHUBBINARYCUSTOM2".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM2"/*.pkg.* &>/dev/null
-                setrepoaddgithub3=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM2"/"$GITHUBBINARYCUSTOM2".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM2"/*.pkg.* 2>&1); then
+                    setrepoaddgithub3=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITHUBBINARYCUSTOM2\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETCUSTGITHUBREPO3" == "1" ]; then
             githubversioncustom3
-            echo ""
-            echo -e "$GITHUBMSGCUST3"
+            if [ "$setrepoaddgithub4" == "1" ]; then
+                echo ""
+                echo -e "$GITHUBMSGCUST3"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub4" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM3"/"$GITHUBBINARYCUSTOM3".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM3"/*.pkg.* &>/dev/null
-                setrepoaddgithub4=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM3"/"$GITHUBBINARYCUSTOM3".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM3"/*.pkg.* 2>&1); then
+                    setrepoaddgithub4=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITHUBBINARYCUSTOM3\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETCUSTGITHUBREPO4" == "1" ]; then
             githubversioncustom4
-            echo ""
-            echo -e "$GITHUBMSGCUST4"
+            if [ "$setrepoaddgithub5" == "1" ]; then
+                echo ""
+                echo -e "$GITHUBMSGCUST4"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub5" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM4"/"$GITHUBBINARYCUSTOM4".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM4"/*.pkg.* &>/dev/null
-                setrepoaddgithub5=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM4"/"$GITHUBBINARYCUSTOM4".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM4"/*.pkg.* 2>&1); then
+                    setrepoaddgithub5=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITHUBBINARYCUSTOM4\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETCUSTGITHUBREPO5" == "1" ]; then
             githubversioncustom5
-            echo ""
-            echo -e "$GITHUBMSGCUST5"
+            if [ "$setrepoaddgithub6" == "1" ]; then
+                echo ""
+                echo -e "$GITHUBMSGCUST5"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgithub6" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM5"/"$GITHUBBINARYCUSTOM5".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM5"/*.pkg.* &>/dev/null
-                setrepoaddgithub6=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITHUBBINARYCUSTOM5"/"$GITHUBBINARYCUSTOM5".db.tar.gz "$DIR"/"$GITHUBBINARYCUSTOM5"/*.pkg.* 2>&1); then
+                    setrepoaddgithub6=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITHUBBINARYCUSTOM5\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETGITLABREPO" == "1" ]; then
             gitlabversion
-            echo ""
-            echo -e "$GITLABMSG"
+            if [ "$setrepoaddgitlab1" == "1" ]; then
+                echo ""
+                echo -e "$GITLABMSG"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab1" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITLABBINARY"/"$GITLABBINARY".db.tar.gz "$DIR"/"$GITLABBINARY"/*.pkg.* &>/dev/null
-                setrepoaddgitlab1=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITLABBINARY"/"$GITLABBINARY".db.tar.gz "$DIR"/"$GITLABBINARY"/*.pkg.* 2>&1); then
+                    setrepoaddgitlab1=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITLABBINARY\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM" == "1" ]; then
             gitlabversioncustom
-            echo ""
-            echo -e "$GITLABMSGCUST"
+            if [ "$setrepoaddgitlab2" == "1" ]; then
+                echo ""
+                echo -e "$GITLABMSGCUST"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab2" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM"/"$GITLABBINARYCUSTOM".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM"/*.pkg.* &>/dev/null
-                setrepoaddgitlab2=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM"/"$GITLABBINARYCUSTOM".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM"/*.pkg.* 2>&1); then
+                    setrepoaddgitlab2=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITLABBINARYCUSTOM\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM2" == "1" ]; then
             gitlabversioncustom2
-            echo ""
-            echo -e "$GITLABMSGCUST2"
+            if [ "$setrepoaddgitlab3" == "1" ]; then
+                echo ""
+                echo -e "$GITLABMSGCUST2"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab3" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM2"/"$GITLABBINARYCUSTOM2".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM2"/*.pkg.* &>/dev/null
-                setrepoaddgitlab3=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM2"/"$GITLABBINARYCUSTOM2".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM2"/*.pkg.* 2>&1); then
+                    setrepoaddgitlab3=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITLABBINARYCUSTOM2\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM3" == "1" ]; then
             gitlabversioncustom3
-            echo ""
-            echo -e "$GITLABMSGCUST3"
+            if [ "$setrepoaddgitlab4" == "1" ]; then
+                echo ""
+                echo -e "$GITLABMSGCUST3"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab4" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM3"/"$GITLABBINARYCUSTOM3".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM3"/*.pkg.* &>/dev/null
-                setrepoaddgitlab4=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM3"/"$GITLABBINARYCUSTOM3".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM3"/*.pkg.* 2>&1); then
+                    setrepoaddgitlab4=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITLABBINARYCUSTOM3\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM4" == "1" ]; then
             gitlabversioncustom4
-            echo ""
-            echo -e "$GITLABMSGCUST4"
+            if [ "$setrepoaddgitlab5" == "1" ]; then
+                echo ""
+                echo -e "$GITLABMSGCUST4"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab5" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM4"/"$GITLABBINARYCUSTOM4".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM4"/*.pkg.* &>/dev/null
-                setrepoaddgitlab5=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM4"/"$GITLABBINARYCUSTOM4".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM4"/*.pkg.* 2>&1); then
+                    setrepoaddgitlab5=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITLABBINARYCUSTOM4\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$SETGITLABREPOCUSTOM5" == "1" ]; then
             gitlabversioncustom5
-            echo ""
-            echo -e "$GITLABMSGCUST5"
+            if [ "$setrepoaddgitlab6" == "1" ]; then
+                echo ""
+                echo -e "$GITLABMSGCUST5"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddgitlab6" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM5"/"$GITLABBINARYCUSTOM5".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM5"/*.pkg.* &>/dev/null
-                setrepoaddgitlab6=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$GITLABBINARYCUSTOM5"/"$GITLABBINARYCUSTOM5".db.tar.gz "$DIR"/"$GITLABBINARYCUSTOM5"/*.pkg.* 2>&1); then
+                    setrepoaddgitlab6=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$GITLABBINARYCUSTOM5\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         if [ "$AURREPO" == "1" ]; then
             aur
-            echo ""
-            echo -e "$AURMSG"
+            if [ "$setrepoaddaur" == "1" ]; then
+                echo ""
+                echo -e "$AURMSG"
+            fi
             # Local pacman repository update - rename repo to your preference
             if [ "$REPOADD" == "1" ] && [ "$setrepoaddaur" == "1" ]; then
                 echo -e "\e[1mUpdating Database ...\e[0m"
-                $REPOADDCMD "$DIR"/"$AURBINARY"/"$AURBINARY".db.tar.gz "$DIR"/"$AURBINARY"/*.pkg.* &>/dev/null
-                setrepoaddaur=0
-                setreposync=1
+                if out=$($REPOADDCMD "$DIR"/"$AURBINARY"/"$AURBINARY".db.tar.gz "$DIR"/"$AURBINARY"/*.pkg.* 2>&1); then
+                    setrepoaddaur=0
+                    setreposync=1
+                else
+                    echo -e "\e[1m\e[31mError: repo-add failed for \"$AURBINARY\":\e[0m"
+                    echo "$out"
+                fi
             fi
         fi
         # Print output summary
@@ -986,11 +1093,7 @@ function main() {
             echo
         }
         countdown
-        sleep 1 && main
-
-        # wait for input, e.g. by pressing ENTER:
-        read -r
-
+        sleep 1
     done
     # close while-loop
 }
@@ -1017,24 +1120,21 @@ function pkgchooser() {
         # Check if -d (DRY RUN) is run for a different text
         if [ "$dryrun" == "1" ]; then
             # Select the source to edit
-            SELECTFILE=$(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to remove package(s)
-    from selected source file. 
-    ESC to quit. [DRY RUN] " --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
-            $SELECTFILE
+            ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to remove package(s)
+    from selected source file.
+    ESC to quit. [DRY RUN] " --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt
         else
             # Check if -b (REBUILD) is run for a different text
             if [ "$rebuild" == "1" ]; then
                 # Select the source to edit
-                SELECTFILE=$(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to rebuild package(s)
-    from selected source file. 
-    ESC to quit. " --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
-                $SELECTFILE
+                ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to rebuild package(s)
+    from selected source file.
+    ESC to quit. " --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt
             else
                 # Select the source to edit
-                SELECTFILE=$(ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to remove package(s)
-    from selected source file. 
-    ESC to quit. " --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt)
-                $SELECTFILE
+                ls "$DIR"/reponames | fzf -i --reverse --info=inline --prompt="Enter string > " --header="    ENTER to remove package(s)
+    from selected source file.
+    ESC to quit. " --preview "cat $DIR/reponames/{}" --no-unicode "$(if (($(tput cols) >= 80)); then echo "--preview-window=right:55%:wrap"; else echo "--preview-window=bottom:60%:wrap"; fi)" | xargs -ro >"$DIR"/reponames/.selected.txt
             fi
         fi
     fi
@@ -1044,10 +1144,9 @@ function pkgchooser() {
     if [ "$dryrun" == "1" ]; then
         if [ -s "$DIR"/reponames/.selected.txt ]; then
             GETSELECTED=$(cat "$DIR"/reponames/.selected.txt)
-            OPENFILE=$(cat "$DIR"/reponames/"$GETSELECTED" | fzf -i --multi --reverse --info=inline --prompt="Enter string > " --header="    TAB key to (un)select.
-    ENTER to remove selected source(s), binary(s) 
-    and package list entry(s). ESC to quit. [DRY RUN] " | xargs -ro >"$DIR"/reponames/.output.txt)
-            $OPENFILE
+            cat "$DIR"/reponames/"$GETSELECTED" | fzf -i --multi --reverse --info=inline --prompt="Enter string > " --header="    TAB key to (un)select.
+    ENTER to remove selected source(s), binary(s)
+    and package list entry(s). ESC to quit. [DRY RUN] " | xargs -ro >"$DIR"/reponames/.output.txt
             awk -v ORS='\n' '{ for (i = 1; i <= NF; i++) print $i }' "$DIR"/reponames/.output.txt >"$DIR"/reponames/.toremove.txt
 
             # Set a start flag for the "removepkgs" function when the second fzf menu has been run
@@ -1059,10 +1158,9 @@ function pkgchooser() {
         if [ "$rebuild" == "1" ]; then
             if [ -s "$DIR"/reponames/.selected.txt ]; then
                 GETSELECTED=$(cat "$DIR"/reponames/.selected.txt)
-                OPENFILE=$(cat "$DIR"/reponames/"$GETSELECTED" | fzf -i --multi --reverse --info=inline --prompt="Enter string > " --header="    TAB key to (un)select.
-    ENTER to rebuild selected package(s) 
-    ESC to quit. " | xargs -ro >"$DIR"/reponames/.output.txt)
-                $OPENFILE
+                cat "$DIR"/reponames/"$GETSELECTED" | fzf -i --multi --reverse --info=inline --prompt="Enter string > " --header="    TAB key to (un)select.
+    ENTER to rebuild selected package(s)
+    ESC to quit. " | xargs -ro >"$DIR"/reponames/.output.txt
                 awk -v ORS='\n' '{ for (i = 1; i <= NF; i++) print $i }' "$DIR"/reponames/.output.txt >"$DIR"/reponames/.toremove.txt
 
                 # Set a start flag for the "removepkgs" function when the second fzf menu has been run
@@ -1072,10 +1170,9 @@ function pkgchooser() {
             # Open file content to manipulate it
             if [ -s "$DIR"/reponames/.selected.txt ]; then
                 GETSELECTED=$(cat "$DIR"/reponames/.selected.txt)
-                OPENFILE=$(cat "$DIR"/reponames/"$GETSELECTED" | fzf -i --multi --reverse --info=inline --prompt="Enter string > " --header="    TAB key to (un)select.
-    ENTER to remove selected source(s), binary(s) 
-    and package list entry(s). ESC to quit. " | xargs -ro >"$DIR"/reponames/.output.txt)
-                $OPENFILE
+                cat "$DIR"/reponames/"$GETSELECTED" | fzf -i --multi --reverse --info=inline --prompt="Enter string > " --header="    TAB key to (un)select.
+    ENTER to remove selected source(s), binary(s)
+    and package list entry(s). ESC to quit. " | xargs -ro >"$DIR"/reponames/.output.txt
                 awk -v ORS='\n' '{ for (i = 1; i <= NF; i++) print $i }' "$DIR"/reponames/.output.txt >"$DIR"/reponames/.toremove.txt
 
                 # Set a start flag for the "removepkgs" function when the second fzf menu has been run
@@ -1087,83 +1184,33 @@ function pkgchooser() {
 
 # Remove selected package(s)
 function removepkgs() {
+    local out
+
     clear
     while IFS="" read -r p || [ -n "$p" ]; do
         echo ""
         cd "$DIR" || exit
-        printf '\e[1;36m%-6s\e[m%s\n' "𝌤 $p" # Print package list entry
-        # Use the eval function which resolves in this example the GETSELECTED variable before the awk is run.
-        SOURCEPKGDIR=$(eval "awk '/""${GETSELECTED}""/ && /SOURCE/'" '"$DIR"/autogit.conf' | grep -E -o ".{0,20}=" | rev | cut -c 2- | rev) # Find Reponame for source folder
-        if [ "$SOURCEPKGDIR" == "GITHUBSOURCE" ]; then
-            PKGDIR=Github1
-            PKGBIN=$GITHUBBINARY
+        printf '\e[1;36m%s %s\e[m\n' "𝌤" "$p" # Print package list entry
+        # Safely extract source package directory without using eval
+        if [[ ! "$GETSELECTED" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+            echo >&2 "Error: Invalid package name format"
+            exit 1
+        fi
+        SOURCEPKGDIR=$(awk -v pattern="$GETSELECTED" '$0 ~ pattern && /SOURCE/ {print}' "$DIR/autogit.conf" | grep -E -o ".{0,20}=" | rev | cut -c 2- | rev) # Find Reponame for source folder
+        
+        # Use array lookup instead of nested if-else
+        if [[ -n "${SOURCE_MAP[$SOURCEPKGDIR]}" ]]; then
+            IFS=: read -r PKGDIR PKGBIN <<< "${SOURCE_MAP[$SOURCEPKGDIR]}"
         else
-            if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM" ]; then
-                PKGDIR=Github2
-                PKGBIN=$GITHUBBINARYCUSTOM
-            else
-                if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM2" ]; then
-                    PKGDIR=Github3
-                    PKGBIN=$GITHUBBINARYCUSTOM2
-                else
-                    if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM3" ]; then
-                        PKGDIR=Github4
-                        PKGBIN=$GITHUBBINARYCUSTOM3
-                    else
-                        if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM4" ]; then
-                            PKGDIR=Github5
-                            PKGBIN=$GITHUBBINARYCUSTOM4
-                        else
-                            if [ "$SOURCEPKGDIR" == "GITHUBSOURCECUSTOM5" ]; then
-                                PKGDIR=Github6
-                                PKGBIN=$GITHUBBINARYCUSTOM5
-                            else
-                                if [ "$SOURCEPKGDIR" == "GITLABSOURCE" ]; then
-                                    PKGDIR=Gitlab1
-                                    PKGBIN=$GITLABBINARY
-                                else
-                                    if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM" ]; then
-                                        PKGDIR=Gitlab2
-                                        PKGBIN=$GITLABBINARYCUSTOM
-                                    else
-                                        if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM2" ]; then
-                                            PKGDIR=Gitlab3
-                                            PKGBIN=$GITLABBINARYCUSTOM2
-                                        else
-                                            if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM3" ]; then
-                                                PKGDIR=Gitlab4
-                                                PKGBIN=$GITLABBINARYCUSTOM3
-                                            else
-                                                if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM4" ]; then
-                                                    PKGDIR=Gitlab5
-                                                    PKGBIN=$GITLABBINARYCUSTOM4
-                                                else
-                                                    if [ "$SOURCEPKGDIR" == "GITLABSOURCECUSTOM5" ]; then
-                                                        PKGDIR=Gitlab6
-                                                        PKGBIN=$GITLABBINARYCUSTOM5
-                                                    else
-                                                        if [ "$SOURCEPKGDIR" == "AURSOURCE" ]; then
-                                                            PKGDIR=AUR
-                                                            PKGBIN=$AURBINARY
-                                                        fi
-                                                    fi
-                                                fi
-                                            fi
-                                        fi
-                                    fi
-                                fi
-                            fi
-                        fi
-                    fi
-                fi
-            fi
+            echo >&2 "Error: Unknown source directory $SOURCEPKGDIR"
+            exit 1
         fi
         echo """$DIR""/packages/$PKGDIR/""$p""" | tee "$DIR"/reponames/.rm.txt &>/dev/null
         location=$(cat "$DIR"/reponames/.rm.txt) #Source package folder to remove
 
         if [ "$dryrun" == "1" ]; then
             if [ -e "$location" ]; then # If file exists (source file folder)
-                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Source:\e[0m \e[1m"\""$location"\""\e[0m"
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Source:\e[0m \e[1m\"$location\"\e[0m"
                 echo -e "\e[1m\e[34m  -> Removing Source Folder ...\e[0m"
                 echo "Dry Run"
             else
@@ -1172,7 +1219,7 @@ function removepkgs() {
             fi
         else
             if [ -e "$location" ]; then # If file exists (source file folder)
-                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Source:\e[0m \e[1m"\""$location"\""\e[0m"
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mFound Source:\e[0m \e[1m\"$location\"\e[0m"
                 echo -e "\e[1m\e[34m  -> Removing Source Folder ...\e[0m"
                 sourcelocation=1
             else
@@ -1181,7 +1228,7 @@ function removepkgs() {
         fi
 
         # Find the Filename
-        #cd ""$DIR"/packages/$PKGDIR/"$p""
+        #cd "$DIR/packages/$PKGDIR/$p"
         if [ -e "$location" ]; then # If file exists (source file folder)
             cd "$location" || exit
             #ls
@@ -1226,9 +1273,13 @@ function removepkgs() {
                 echo -e "\e[1m""$locationbin""\e[0m"
                 echo -e "\e[1m\e[34m  -> Removing Binary ...\e[0m"
                 # Remove old database first as repo-add has no option to remove deleted binary's when updating it
-                rm -rf "${DIR:?}"/"$PKGBIN"/*"$PKGBIN"* # remove database
-                locationbinn=$(echo "$locationbin")
-                rm -rf "${DIR:?}"/"$PKGBIN"/"$locationbinn" # remove binary
+                if [[ -n "$PKGBIN" && -d "${DIR}/${PKGBIN}" ]]; then
+                    rm -rf "${DIR:?}/${PKGBIN}"/*"${PKGBIN}"* # remove database
+                fi
+                locationbinn="$locationbin"
+                if [[ -n "$PKGBIN" && -n "$locationbinn" && -d "${DIR}/${PKGBIN}" ]]; then
+                    rm -rf "${DIR:?}/${PKGBIN}/${locationbinn}" # remove binary
+                fi
 
                 # Run repo-add
                 if [ "$rebuild" == "1" ]; then
@@ -1238,18 +1289,21 @@ function removepkgs() {
                         #echo
                         echo -e "\e[1m\e[32m==>\e[0m \e[1mUpdating Database ...\e[0m"
                         echo -e "\e[1m\e[34m  -> ""$DIR""/$PKGBIN ...\e[0m"
-                        $REPOADDCMD "$DIR"/"$PKGBIN"/"$PKGBIN".db.tar.gz "$DIR"/"$PKGBIN"/*.pkg.* &>/dev/null
+                        if ! out=$($REPOADDCMD "$DIR"/"$PKGBIN"/"$PKGBIN".db.tar.gz "$DIR"/"$PKGBIN"/*.pkg.* 2>&1); then
+                            echo -e "\e[1m\e[31mError: repo-add failed for \"$PKGBIN\":\e[0m"
+                            echo "$out"
+                        fi
                     fi
                 fi
             fi
         fi
         # remove the source folder here - not before!
-        if [ "$sourcelocation" == "1" ]; then
+        if [ "$sourcelocation" == "1" ] && [[ -n "$location" && -d "$location" ]]; then
             rm -rf "$location"
         fi
         if [ "$dryrun" == "1" ]; then
-            echo -e "\e[1m\e[32m==>\e[0m \e[1mRemoving From List: "\""$p"\""\e[0m"
-            echo -e "\e[1m\e[34m  -> ""$DIR"/reponames/"$GETSELECTED"" ...\e[0m"
+            echo -e "\e[1m\e[32m==>\e[0m \e[1mRemoving From List: \"$p\"\e[0m"
+            echo -e "\e[1m\e[34m  -> \"$DIR/reponames/$GETSELECTED\" ...\e[0m"
             echo "Dry Run"
             echo -e "\e[7m\e[31m<DELETED>\e[0m\e[0m"
         else
@@ -1258,9 +1312,9 @@ function removepkgs() {
                 autogitrun=1
                 sleep 3
             else
-                echo -e "\e[1m\e[32m==>\e[0m \e[1mRemoving From List: "\""$p"\""\e[0m"
-                echo -e "\e[1m\e[34m  -> ""$DIR"/reponames/"$GETSELECTED"" ...\e[0m"
-                grep -v "$p" "$DIR"/reponames/"$GETSELECTED" >"$DIR"/reponames/.pkglist
+                echo -e "\e[1m\e[32m==>\e[0m \e[1mRemoving From List: \"$p\"\e[0m"
+                echo -e "\e[1m\e[34m  -> \"$DIR/reponames/$GETSELECTED\" ...\e[0m"
+                grep -v -x -F "$p" "$DIR"/reponames/"$GETSELECTED" >"$DIR"/reponames/.pkglist
                 mv "$DIR"/reponames/.pkglist "$DIR"/reponames/"$GETSELECTED"
                 echo -e "\e[7m\e[31m<DELETED>\e[0m\e[0m"
             fi
